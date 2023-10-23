@@ -22,3 +22,9 @@ go.work
 
 # Log files
 *.log
+
+# protoc-gen-validate proto file
+api/proto/auth/validate.proto
+
+# certificate files
+cert/*
