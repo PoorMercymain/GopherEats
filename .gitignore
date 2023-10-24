@@ -28,3 +28,6 @@ api/proto/auth/validate.proto
 
 # certificate files
 cert/*
+
+# GoLand files
+.idea/*
