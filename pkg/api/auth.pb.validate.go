@@ -158,3 +158,125 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = RegisterRequestV1ValidationError{}
+
+// Validate checks the field values on LoginRequestV1 with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *LoginRequestV1) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on LoginRequestV1 with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in LoginRequestV1MultiError,
+// or nil if none found.
+func (m *LoginRequestV1) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *LoginRequestV1) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetEmail()) < 1 {
+		err := LoginRequestV1ValidationError{
+			field:  "Email",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetPassword()) < 1 {
+		err := LoginRequestV1ValidationError{
+			field:  "Password",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return LoginRequestV1MultiError(errors)
+	}
+
+	return nil
+}
+
+// LoginRequestV1MultiError is an error wrapping multiple validation errors
+// returned by LoginRequestV1.ValidateAll() if the designated constraints
+// aren't met.
+type LoginRequestV1MultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m LoginRequestV1MultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m LoginRequestV1MultiError) AllErrors() []error { return m }
+
+// LoginRequestV1ValidationError is the validation error returned by
+// LoginRequestV1.Validate if the designated constraints aren't met.
+type LoginRequestV1ValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e LoginRequestV1ValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e LoginRequestV1ValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e LoginRequestV1ValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e LoginRequestV1ValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e LoginRequestV1ValidationError) ErrorName() string { return "LoginRequestV1ValidationError" }
+
+// Error satisfies the builtin error interface
+func (e LoginRequestV1ValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sLoginRequestV1.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = LoginRequestV1ValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = LoginRequestV1ValidationError{}

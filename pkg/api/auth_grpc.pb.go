@@ -25,6 +25,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthV1Client interface {
 	RegisterV1(ctx context.Context, in *RegisterRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	LoginV1(ctx context.Context, in *LoginRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type authV1Client struct {
@@ -44,11 +45,21 @@ func (c *authV1Client) RegisterV1(ctx context.Context, in *RegisterRequestV1, op
 	return out, nil
 }
 
+func (c *authV1Client) LoginV1(ctx context.Context, in *LoginRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/api.v1.AuthV1/LoginV1", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthV1Server is the server API for AuthV1 service.
 // All implementations must embed UnimplementedAuthV1Server
 // for forward compatibility
 type AuthV1Server interface {
 	RegisterV1(context.Context, *RegisterRequestV1) (*emptypb.Empty, error)
+	LoginV1(context.Context, *LoginRequestV1) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAuthV1Server()
 }
 
@@ -58,6 +69,9 @@ type UnimplementedAuthV1Server struct {
 
 func (UnimplementedAuthV1Server) RegisterV1(context.Context, *RegisterRequestV1) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterV1 not implemented")
+}
+func (UnimplementedAuthV1Server) LoginV1(context.Context, *LoginRequestV1) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LoginV1 not implemented")
 }
 func (UnimplementedAuthV1Server) mustEmbedUnimplementedAuthV1Server() {}
 
@@ -90,6 +104,24 @@ func _AuthV1_RegisterV1_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthV1_LoginV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequestV1)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthV1Server).LoginV1(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.v1.AuthV1/LoginV1",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthV1Server).LoginV1(ctx, req.(*LoginRequestV1))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthV1_ServiceDesc is the grpc.ServiceDesc for AuthV1 service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -100,6 +132,10 @@ var AuthV1_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterV1",
 			Handler:    _AuthV1_RegisterV1_Handler,
+		},
+		{
+			MethodName: "LoginV1",
+			Handler:    _AuthV1_LoginV1_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

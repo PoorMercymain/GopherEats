@@ -1,16 +1,22 @@
 package main
 
 import (
+	"context"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/handler"
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/interceptor"
+	"github.com/PoorMercymain/GopherEats/internal/app/auth/repository"
+	"github.com/PoorMercymain/GopherEats/internal/app/auth/service"
 	"github.com/PoorMercymain/GopherEats/internal/pkg/logger"
 	"github.com/PoorMercymain/GopherEats/pkg/api"
 )
@@ -19,6 +25,7 @@ func main() {
 	const (
 		certPath = "cert/localhost.crt"
 		keyPath  = "cert/localhost.key"
+		mongoURI = "mongodb://localhost:27017"
 	)
 	creds, err := credentials.NewServerTLSFromFile(certPath, keyPath)
 	if err != nil {
@@ -26,7 +33,34 @@ func main() {
 	}
 	grpcServer := grpc.NewServer(grpc.Creds(creds), grpc.ChainUnaryInterceptor(interceptor.ValidateRequest))
 
-	authServer := handler.Server{}
+	clientOptions := options.Client().ApplyURI(mongoURI)
+	ctx := context.Background()
+	client, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		logger.Logger().Errorln(err)
+	}
+
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		logger.Logger().Errorln(err)
+	}
+
+	collection := client.Database("GopherEats").Collection("users")
+
+	indexModel := mongo.IndexModel{
+		Keys:    bson.M{"email": 1},
+		Options: options.Index().SetUnique(true),
+	}
+
+	_, err = collection.Indexes().CreateOne(context.Background(), indexModel)
+	if err != nil {
+		logger.Logger().Errorln(err)
+	}
+
+	ar := repository.New(collection)
+	as := service.New(ar)
+
+	authServer := handler.New(as)
 
 	api.RegisterAuthV1Server(grpcServer, authServer)
 
