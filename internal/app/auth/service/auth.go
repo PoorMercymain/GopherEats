@@ -40,3 +40,32 @@ func (s *auth) CheckAuthData(ctx context.Context, email string, password string)
 
 	return nil
 }
+
+func (s *auth) GetPasswordHash(ctx context.Context, email string) (string, error) {
+	return s.repo.GetPasswordHash(ctx, email)
+}
+
+func (s *auth) UpdatePassword(ctx context.Context, email string, oldPassword string, newPassword string) error {
+	hash, err := s.repo.GetPasswordHash(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(oldPassword)) != nil {
+		return errors.ErrorWrongPassword
+	}
+
+	byteHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	strHash := string(byteHash)
+
+	err = s.repo.UpdatePassword(ctx, email, strHash)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

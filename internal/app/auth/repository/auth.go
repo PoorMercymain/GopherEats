@@ -38,3 +38,9 @@ func (r *auth) GetPasswordHash(ctx context.Context, email string) (string, error
 
 	return user.PasswordHash, nil
 }
+
+func (r *auth) UpdatePassword(ctx context.Context, email string, newPasswordHash string) error {
+	_, err := r.mongo.UpdateOne(ctx, bson.M{"email": email}, bson.M{"$set": bson.M{"passwordHash": newPasswordHash}})
+
+	return err
+}

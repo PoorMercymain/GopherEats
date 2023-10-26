@@ -280,3 +280,249 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = LoginRequestV1ValidationError{}
+
+// Validate checks the field values on LoginResponseV1 with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *LoginResponseV1) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on LoginResponseV1 with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// LoginResponseV1MultiError, or nil if none found.
+func (m *LoginResponseV1) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *LoginResponseV1) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetToken()) < 3 {
+		err := LoginResponseV1ValidationError{
+			field:  "Token",
+			reason: "value length must be at least 3 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return LoginResponseV1MultiError(errors)
+	}
+
+	return nil
+}
+
+// LoginResponseV1MultiError is an error wrapping multiple validation errors
+// returned by LoginResponseV1.ValidateAll() if the designated constraints
+// aren't met.
+type LoginResponseV1MultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m LoginResponseV1MultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m LoginResponseV1MultiError) AllErrors() []error { return m }
+
+// LoginResponseV1ValidationError is the validation error returned by
+// LoginResponseV1.Validate if the designated constraints aren't met.
+type LoginResponseV1ValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e LoginResponseV1ValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e LoginResponseV1ValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e LoginResponseV1ValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e LoginResponseV1ValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e LoginResponseV1ValidationError) ErrorName() string { return "LoginResponseV1ValidationError" }
+
+// Error satisfies the builtin error interface
+func (e LoginResponseV1ValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sLoginResponseV1.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = LoginResponseV1ValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = LoginResponseV1ValidationError{}
+
+// Validate checks the field values on ChangePasswordRequestV1 with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ChangePasswordRequestV1) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ChangePasswordRequestV1 with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ChangePasswordRequestV1MultiError, or nil if none found.
+func (m *ChangePasswordRequestV1) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ChangePasswordRequestV1) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetEmail()) < 1 {
+		err := ChangePasswordRequestV1ValidationError{
+			field:  "Email",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetOldPassword()) < 1 {
+		err := ChangePasswordRequestV1ValidationError{
+			field:  "OldPassword",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetNewPassword()) < 1 {
+		err := ChangePasswordRequestV1ValidationError{
+			field:  "NewPassword",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ChangePasswordRequestV1MultiError(errors)
+	}
+
+	return nil
+}
+
+// ChangePasswordRequestV1MultiError is an error wrapping multiple validation
+// errors returned by ChangePasswordRequestV1.ValidateAll() if the designated
+// constraints aren't met.
+type ChangePasswordRequestV1MultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ChangePasswordRequestV1MultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ChangePasswordRequestV1MultiError) AllErrors() []error { return m }
+
+// ChangePasswordRequestV1ValidationError is the validation error returned by
+// ChangePasswordRequestV1.Validate if the designated constraints aren't met.
+type ChangePasswordRequestV1ValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ChangePasswordRequestV1ValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ChangePasswordRequestV1ValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ChangePasswordRequestV1ValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ChangePasswordRequestV1ValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ChangePasswordRequestV1ValidationError) ErrorName() string {
+	return "ChangePasswordRequestV1ValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ChangePasswordRequestV1ValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sChangePasswordRequestV1.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ChangePasswordRequestV1ValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ChangePasswordRequestV1ValidationError{}

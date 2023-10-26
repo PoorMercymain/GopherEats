@@ -9,7 +9,8 @@ import "validate.proto"; // it should be in the same directory with the proto fi
 
 service AuthV1 {
     rpc RegisterV1(RegisterRequestV1) returns (google.protobuf.Empty) {}
-    rpc LoginV1(LoginRequestV1) returns (google.protobuf.Empty) {}
+    rpc LoginV1(LoginRequestV1) returns (LoginResponseV1) {}
+    rpc ChangePasswordV1(ChangePasswordRequestV1) returns (google.protobuf.Empty) {}
 }
 
 message RegisterRequestV1 {
@@ -20,4 +21,14 @@ message RegisterRequestV1 {
 message LoginRequestV1 {
     string email = 1 [(validate.rules).string.min_len = 1];
     string password = 2 [(validate.rules).string.min_len = 1];
+}
+
+message LoginResponseV1 {
+    string token = 1 [(validate.rules).string.min_len = 3];
+}
+
+message ChangePasswordRequestV1 {
+    string email = 1 [(validate.rules).string.min_len = 1];
+    string old_password = 2 [(validate.rules).string.min_len = 1];
+    string new_password = 3 [(validate.rules).string.min_len = 1];
 }

@@ -42,3 +42,19 @@ func (mc *mCollection) FindOne(ctx context.Context, filter interface{}) (*mongo.
 
 	return findHashResult, nil
 }
+
+func (mc *mCollection) UpdateOne(ctx context.Context, filter interface{}, update interface{}) (*mongo.UpdateResult, error) {
+	mc.Lock()
+	updateResult, err := mc.mongoCollection.UpdateOne(ctx, filter, update)
+	mc.Unlock()
+
+	if err != nil {
+		return nil, err
+	}
+
+	if updateResult.MatchedCount == 0 {
+		return nil, authErrors.ErrorUserWasNotUpdated
+	}
+
+	return updateResult, nil
+}
