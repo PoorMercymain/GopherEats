@@ -8,14 +8,22 @@ import "google/protobuf/empty.proto";
 import "validate.proto"; // it should be in the same directory with the proto file
 
 service AuthV1 {
-    rpc RegisterV1(RegisterRequestV1) returns (google.protobuf.Empty) {}
+    rpc RegisterV1(RegisterRequestV1) returns (RegisterResponseV1) {}
     rpc LoginV1(LoginRequestV1) returns (LoginResponseV1) {}
     rpc ChangePasswordV1(ChangePasswordRequestV1) returns (google.protobuf.Empty) {}
+    rpc LoginWithOTPV1(LoginWithOTPRequestV1) returns (LoginResponseV1) {}
+    rpc ChangeAddressV1(ChangeAddressRequestV1) returns (google.protobuf.Empty) {}
+    rpc CheckTokenInMetadataV1(google.protobuf.Empty) returns (google.protobuf.Empty) {}
 }
 
 message RegisterRequestV1 {
     string email = 1 [(validate.rules).string.min_len = 1];
     string password = 2 [(validate.rules).string.min_len = 1];
+    string address = 3 [(validate.rules).string.min_len = 1];
+}
+
+message RegisterResponseV1 {
+    string otp_secret_key = 1 [(validate.rules).string.min_len = 1];
 }
 
 message LoginRequestV1 {
@@ -31,4 +39,15 @@ message ChangePasswordRequestV1 {
     string email = 1 [(validate.rules).string.min_len = 1];
     string old_password = 2 [(validate.rules).string.min_len = 1];
     string new_password = 3 [(validate.rules).string.min_len = 1];
+}
+
+message LoginWithOTPRequestV1 {
+    string email = 1 [(validate.rules).string.min_len = 1];
+    string otp_code = 2 [(validate.rules).string.min_len = 6, (validate.rules).string.max_len = 6];
+}
+
+message ChangeAddressRequestV1 {
+    string email = 1 [(validate.rules).string.min_len = 1];
+    string password = 2 [(validate.rules).string.min_len = 1];
+    string new_address = 3 [(validate.rules).string.min_len = 1];
 }

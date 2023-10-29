@@ -3,8 +3,11 @@ package handler
 import (
 	"context"
 	"errors"
+	"strconv"
 
+	"github.com/pquerna/otp/totp"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -23,18 +26,44 @@ func New(srv domain.AuthService) *auth {
 	return &auth{srv: srv}
 }
 
-func (h *auth) RegisterV1(ctx context.Context, r *api.RegisterRequestV1) (*emptypb.Empty, error) {
-	err := h.srv.RegisterUser(ctx, r.Email, r.Password)
+func (h *auth) RegisterV1(ctx context.Context, r *api.RegisterRequestV1) (*api.RegisterResponseV1, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Errorf(codes.Internal, "metadata not found in request context")
+	}
+
+	isAdminStringSlice := md.Get("is_admin")
+	if len(isAdminStringSlice) == 0 {
+		return nil, status.Errorf(codes.Internal, "incorrect server configuration, interceptor to check trusted subnet was not used")
+	}
+
+	isAdmin, err := strconv.ParseBool(isAdminStringSlice[0])
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "not a bool value provided for is_admin")
+	}
+
+	key, err := totp.Generate(totp.GenerateOpts{
+		Issuer:      "GopherEats",
+		AccountName: r.Email,
+	})
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "could not generate secret key for OTP")
+	}
+
+	secretKey := key.Secret()
+
+	err = h.srv.RegisterUser(ctx, r.Email, r.Password, r.Address, secretKey, isAdmin)
 
 	if errors.Is(err, authErrors.ErrorUserAlreadyExists) {
-		return &emptypb.Empty{}, status.Errorf(codes.AlreadyExists, r.Email)
+		return nil, status.Errorf(codes.AlreadyExists, r.Email)
 	}
 
 	if err != nil {
-		return &emptypb.Empty{}, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
 	}
 
-	return &emptypb.Empty{}, nil
+	return &api.RegisterResponseV1{OtpSecretKey: secretKey}, nil
 }
 
 func (h *auth) LoginV1(ctx context.Context, r *api.LoginRequestV1) (*api.LoginResponseV1, error) {
@@ -83,6 +112,89 @@ func (h *auth) ChangePasswordV1(ctx context.Context, r *api.ChangePasswordReques
 
 	if err != nil {
 		return &emptypb.Empty{}, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
+func (h *auth) LoginWithOTPV1(ctx context.Context, r *api.LoginWithOTPRequestV1) (*api.LoginResponseV1, error) {
+	err := h.srv.LoginWithOTP(ctx, r.Email, r.OtpCode)
+
+	if errors.Is(err, authErrors.ErrorNoSuchUser) {
+		return nil, status.Errorf(codes.NotFound, "no user with email %v found", r.Email)
+	}
+
+	if errors.Is(err, authErrors.ErrorWrongOTP) {
+		return nil, status.Errorf(codes.Unauthenticated, "provided one-time password is wrong")
+	}
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+	}
+
+	hash, err := h.srv.GetPasswordHash(ctx, r.Email)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+	}
+
+	const key = "somesecretkey" // TODO: should not be set here
+
+	jwt, err := token.JWT(r.Email, hash, key)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+	}
+
+	return &api.LoginResponseV1{Token: jwt}, nil
+}
+
+func (h *auth) ChangeAddressV1(ctx context.Context, r *api.ChangeAddressRequestV1) (*emptypb.Empty, error) {
+	err := h.srv.UpdateAddress(ctx, r.Email, r.Password, r.NewAddress)
+	if errors.Is(err, authErrors.ErrorNoSuchUser) {
+		return &emptypb.Empty{}, status.Errorf(codes.NotFound, "no user with email %v found", r.Email)
+	}
+
+	if errors.Is(err, authErrors.ErrorWrongPassword) {
+		return &emptypb.Empty{}, status.Errorf(codes.InvalidArgument, "provided password is wrong")
+	}
+
+	if errors.Is(err, authErrors.ErrorUserWasNotUpdated) {
+		return &emptypb.Empty{}, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+	}
+
+	if err != nil {
+		return &emptypb.Empty{}, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+	}
+
+	return &emptypb.Empty{}, nil
+}
+
+func (h *auth) CheckTokenInMetadataV1(ctx context.Context, r *emptypb.Empty) (*emptypb.Empty, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return &emptypb.Empty{}, status.Errorf(codes.NotFound, "metadata not found")
+	}
+
+	tokenSlice := md.Get("authorization") // token should be under "authorization" in metadata
+	if len(tokenSlice) != 1 {             // only one token allowed
+		return &emptypb.Empty{}, status.Errorf(codes.InvalidArgument, "metadata should contain one token under \"authorization\" key")
+	}
+
+	providedToken := tokenSlice[0]
+
+	const key = "somesecretkey" // TODO: should not be set here
+
+	email, passwordHash, err := token.GetAuthDataFromJWT(providedToken, key)
+	if err != nil {
+		return &emptypb.Empty{}, status.Errorf(codes.InvalidArgument, "invalid token provided")
+	}
+
+	hash, err := h.srv.GetPasswordHash(ctx, email)
+	if err != nil {
+		return &emptypb.Empty{}, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+	}
+
+	if hash != passwordHash {
+		return &emptypb.Empty{}, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", authErrors.ErrorWrongToken)
 	}
 
 	return &emptypb.Empty{}, nil

@@ -23,15 +23,16 @@ import (
 
 func main() {
 	const (
-		certPath = "cert/localhost.crt"
-		keyPath  = "cert/localhost.key"
-		mongoURI = "mongodb://localhost:27017"
+		certPath      = "cert/localhost.crt"
+		keyPath       = "cert/localhost.key"
+		mongoURI      = "mongodb://localhost:27017"
+		trustedSubnet = ""
 	)
 	creds, err := credentials.NewServerTLSFromFile(certPath, keyPath)
 	if err != nil {
 		logger.Logger().Fatalln("Failed to setup tls:", err)
 	}
-	grpcServer := grpc.NewServer(grpc.Creds(creds), grpc.ChainUnaryInterceptor(interceptor.ValidateRequest))
+	grpcServer := grpc.NewServer(grpc.Creds(creds), grpc.ChainUnaryInterceptor(interceptor.ValidateRequest, interceptor.CheckCIDR(trustedSubnet)))
 
 	clientOptions := options.Client().ApplyURI(mongoURI)
 	ctx := context.Background()

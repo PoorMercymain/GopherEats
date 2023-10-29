@@ -29,18 +29,18 @@ func (mc *mCollection) InsertOne(ctx context.Context, document interface{}) erro
 
 func (mc *mCollection) FindOne(ctx context.Context, filter interface{}) (*mongo.SingleResult, error) {
 	mc.RLock()
-	findHashResult := mc.mongoCollection.FindOne(ctx, filter)
+	findResult := mc.mongoCollection.FindOne(ctx, filter)
 	mc.RUnlock()
 
-	if errors.Is(findHashResult.Err(), mongo.ErrNoDocuments) {
+	if errors.Is(findResult.Err(), mongo.ErrNoDocuments) {
 		return nil, authErrors.ErrorNoSuchUser
 	}
 
-	if findHashResult.Err() != nil {
-		return nil, findHashResult.Err()
+	if findResult.Err() != nil {
+		return nil, findResult.Err()
 	}
 
-	return findHashResult, nil
+	return findResult, nil
 }
 
 func (mc *mCollection) UpdateOne(ctx context.Context, filter interface{}, update interface{}) (*mongo.UpdateResult, error) {

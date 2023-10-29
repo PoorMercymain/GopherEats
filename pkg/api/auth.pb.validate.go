@@ -79,6 +79,17 @@ func (m *RegisterRequestV1) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if utf8.RuneCountInString(m.GetAddress()) < 1 {
+		err := RegisterRequestV1ValidationError{
+			field:  "Address",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if len(errors) > 0 {
 		return RegisterRequestV1MultiError(errors)
 	}
@@ -158,6 +169,119 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = RegisterRequestV1ValidationError{}
+
+// Validate checks the field values on RegisterResponseV1 with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *RegisterResponseV1) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on RegisterResponseV1 with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// RegisterResponseV1MultiError, or nil if none found.
+func (m *RegisterResponseV1) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *RegisterResponseV1) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetOtpSecretKey()) < 1 {
+		err := RegisterResponseV1ValidationError{
+			field:  "OtpSecretKey",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return RegisterResponseV1MultiError(errors)
+	}
+
+	return nil
+}
+
+// RegisterResponseV1MultiError is an error wrapping multiple validation errors
+// returned by RegisterResponseV1.ValidateAll() if the designated constraints
+// aren't met.
+type RegisterResponseV1MultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m RegisterResponseV1MultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m RegisterResponseV1MultiError) AllErrors() []error { return m }
+
+// RegisterResponseV1ValidationError is the validation error returned by
+// RegisterResponseV1.Validate if the designated constraints aren't met.
+type RegisterResponseV1ValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e RegisterResponseV1ValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e RegisterResponseV1ValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e RegisterResponseV1ValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e RegisterResponseV1ValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e RegisterResponseV1ValidationError) ErrorName() string {
+	return "RegisterResponseV1ValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e RegisterResponseV1ValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sRegisterResponseV1.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = RegisterResponseV1ValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = RegisterResponseV1ValidationError{}
 
 // Validate checks the field values on LoginRequestV1 with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
@@ -526,3 +650,263 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ChangePasswordRequestV1ValidationError{}
+
+// Validate checks the field values on LoginWithOTPRequestV1 with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *LoginWithOTPRequestV1) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on LoginWithOTPRequestV1 with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// LoginWithOTPRequestV1MultiError, or nil if none found.
+func (m *LoginWithOTPRequestV1) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *LoginWithOTPRequestV1) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetEmail()) < 1 {
+		err := LoginWithOTPRequestV1ValidationError{
+			field:  "Email",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetOtpCode()) != 6 {
+		err := LoginWithOTPRequestV1ValidationError{
+			field:  "OtpCode",
+			reason: "value length must be 6 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+
+	}
+
+	if len(errors) > 0 {
+		return LoginWithOTPRequestV1MultiError(errors)
+	}
+
+	return nil
+}
+
+// LoginWithOTPRequestV1MultiError is an error wrapping multiple validation
+// errors returned by LoginWithOTPRequestV1.ValidateAll() if the designated
+// constraints aren't met.
+type LoginWithOTPRequestV1MultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m LoginWithOTPRequestV1MultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m LoginWithOTPRequestV1MultiError) AllErrors() []error { return m }
+
+// LoginWithOTPRequestV1ValidationError is the validation error returned by
+// LoginWithOTPRequestV1.Validate if the designated constraints aren't met.
+type LoginWithOTPRequestV1ValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e LoginWithOTPRequestV1ValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e LoginWithOTPRequestV1ValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e LoginWithOTPRequestV1ValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e LoginWithOTPRequestV1ValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e LoginWithOTPRequestV1ValidationError) ErrorName() string {
+	return "LoginWithOTPRequestV1ValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e LoginWithOTPRequestV1ValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sLoginWithOTPRequestV1.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = LoginWithOTPRequestV1ValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = LoginWithOTPRequestV1ValidationError{}
+
+// Validate checks the field values on ChangeAddressRequestV1 with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ChangeAddressRequestV1) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ChangeAddressRequestV1 with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ChangeAddressRequestV1MultiError, or nil if none found.
+func (m *ChangeAddressRequestV1) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ChangeAddressRequestV1) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetEmail()) < 1 {
+		err := ChangeAddressRequestV1ValidationError{
+			field:  "Email",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetPassword()) < 1 {
+		err := ChangeAddressRequestV1ValidationError{
+			field:  "Password",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetNewAddress()) < 1 {
+		err := ChangeAddressRequestV1ValidationError{
+			field:  "NewAddress",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ChangeAddressRequestV1MultiError(errors)
+	}
+
+	return nil
+}
+
+// ChangeAddressRequestV1MultiError is an error wrapping multiple validation
+// errors returned by ChangeAddressRequestV1.ValidateAll() if the designated
+// constraints aren't met.
+type ChangeAddressRequestV1MultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ChangeAddressRequestV1MultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ChangeAddressRequestV1MultiError) AllErrors() []error { return m }
+
+// ChangeAddressRequestV1ValidationError is the validation error returned by
+// ChangeAddressRequestV1.Validate if the designated constraints aren't met.
+type ChangeAddressRequestV1ValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ChangeAddressRequestV1ValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ChangeAddressRequestV1ValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ChangeAddressRequestV1ValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ChangeAddressRequestV1ValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ChangeAddressRequestV1ValidationError) ErrorName() string {
+	return "ChangeAddressRequestV1ValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ChangeAddressRequestV1ValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sChangeAddressRequestV1.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ChangeAddressRequestV1ValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ChangeAddressRequestV1ValidationError{}
