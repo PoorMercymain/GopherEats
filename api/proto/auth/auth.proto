@@ -14,6 +14,7 @@ service AuthV1 {
     rpc LoginWithOTPV1(LoginWithOTPRequestV1) returns (LoginResponseV1) {}
     rpc ChangeAddressV1(ChangeAddressRequestV1) returns (google.protobuf.Empty) {}
     rpc CheckTokenInMetadataV1(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    rpc CheckIfUserIsAdminV1(CheckIfUserIsAdminRequest) returns (CheckIfUserIsAdminResponse) {}
 }
 
 message RegisterRequestV1 {
@@ -50,4 +51,12 @@ message ChangeAddressRequestV1 {
     string email = 1 [(validate.rules).string.min_len = 1];
     string password = 2 [(validate.rules).string.min_len = 1];
     string new_address = 3 [(validate.rules).string.min_len = 1];
+}
+
+message CheckIfUserIsAdminRequest {
+    string email = 1 [(validate.rules).string.min_len = 1];
+}
+
+message CheckIfUserIsAdminResponse {
+    bool is_admin = 1;
 }

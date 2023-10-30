@@ -12,18 +12,20 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/domain"
+	"github.com/PoorMercymain/GopherEats/internal/app/auth/email"
 	authErrors "github.com/PoorMercymain/GopherEats/internal/app/auth/errors"
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/token"
 	"github.com/PoorMercymain/GopherEats/pkg/api"
 )
 
 type auth struct {
-	srv domain.AuthService
+	jwtSecretKey string
+	srv          domain.AuthService
 	api.UnimplementedAuthV1Server
 }
 
-func New(srv domain.AuthService) *auth {
-	return &auth{srv: srv}
+func New(srv domain.AuthService, jwtSecretKey string) *auth {
+	return &auth{srv: srv, jwtSecretKey: jwtSecretKey}
 }
 
 func (h *auth) RegisterV1(ctx context.Context, r *api.RegisterRequestV1) (*api.RegisterResponseV1, error) {
@@ -40,6 +42,10 @@ func (h *auth) RegisterV1(ctx context.Context, r *api.RegisterRequestV1) (*api.R
 	isAdmin, err := strconv.ParseBool(isAdminStringSlice[0])
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "not a bool value provided for is_admin")
+	}
+
+	if !email.ValidateEmail(r.Email) {
+		return nil, status.Errorf(codes.InvalidArgument, "wrong format of email used")
 	}
 
 	key, err := totp.Generate(totp.GenerateOpts{
@@ -67,6 +73,10 @@ func (h *auth) RegisterV1(ctx context.Context, r *api.RegisterRequestV1) (*api.R
 }
 
 func (h *auth) LoginV1(ctx context.Context, r *api.LoginRequestV1) (*api.LoginResponseV1, error) {
+	if !email.ValidateEmail(r.Email) {
+		return nil, status.Errorf(codes.InvalidArgument, "wrong format of email used")
+	}
+
 	err := h.srv.CheckAuthData(ctx, r.Email, r.Password)
 
 	if errors.Is(err, authErrors.ErrorNoSuchUser) {
@@ -86,9 +96,7 @@ func (h *auth) LoginV1(ctx context.Context, r *api.LoginRequestV1) (*api.LoginRe
 		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
 	}
 
-	const key = "somesecretkey" // TODO: should not be set here
-
-	jwt, err := token.JWT(r.Email, hash, key)
+	jwt, err := token.JWT(r.Email, hash, h.jwtSecretKey)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
 	}
@@ -97,6 +105,10 @@ func (h *auth) LoginV1(ctx context.Context, r *api.LoginRequestV1) (*api.LoginRe
 }
 
 func (h *auth) ChangePasswordV1(ctx context.Context, r *api.ChangePasswordRequestV1) (*emptypb.Empty, error) {
+	if !email.ValidateEmail(r.Email) {
+		return &emptypb.Empty{}, status.Errorf(codes.InvalidArgument, "wrong format of email used")
+	}
+
 	err := h.srv.UpdatePassword(ctx, r.Email, r.OldPassword, r.NewPassword)
 	if errors.Is(err, authErrors.ErrorNoSuchUser) {
 		return &emptypb.Empty{}, status.Errorf(codes.NotFound, "no user with email %v found", r.Email)
@@ -118,6 +130,10 @@ func (h *auth) ChangePasswordV1(ctx context.Context, r *api.ChangePasswordReques
 }
 
 func (h *auth) LoginWithOTPV1(ctx context.Context, r *api.LoginWithOTPRequestV1) (*api.LoginResponseV1, error) {
+	if !email.ValidateEmail(r.Email) {
+		return nil, status.Errorf(codes.InvalidArgument, "wrong format of email used")
+	}
+
 	err := h.srv.LoginWithOTP(ctx, r.Email, r.OtpCode)
 
 	if errors.Is(err, authErrors.ErrorNoSuchUser) {
@@ -137,9 +153,7 @@ func (h *auth) LoginWithOTPV1(ctx context.Context, r *api.LoginWithOTPRequestV1)
 		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
 	}
 
-	const key = "somesecretkey" // TODO: should not be set here
-
-	jwt, err := token.JWT(r.Email, hash, key)
+	jwt, err := token.JWT(r.Email, hash, h.jwtSecretKey)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
 	}
@@ -148,6 +162,10 @@ func (h *auth) LoginWithOTPV1(ctx context.Context, r *api.LoginWithOTPRequestV1)
 }
 
 func (h *auth) ChangeAddressV1(ctx context.Context, r *api.ChangeAddressRequestV1) (*emptypb.Empty, error) {
+	if !email.ValidateEmail(r.Email) {
+		return &emptypb.Empty{}, status.Errorf(codes.InvalidArgument, "wrong format of email used")
+	}
+
 	err := h.srv.UpdateAddress(ctx, r.Email, r.Password, r.NewAddress)
 	if errors.Is(err, authErrors.ErrorNoSuchUser) {
 		return &emptypb.Empty{}, status.Errorf(codes.NotFound, "no user with email %v found", r.Email)
@@ -181,14 +199,16 @@ func (h *auth) CheckTokenInMetadataV1(ctx context.Context, r *emptypb.Empty) (*e
 
 	providedToken := tokenSlice[0]
 
-	const key = "somesecretkey" // TODO: should not be set here
-
-	email, passwordHash, err := token.GetAuthDataFromJWT(providedToken, key)
+	emailAddress, passwordHash, err := token.GetAuthDataFromJWT(providedToken, h.jwtSecretKey)
 	if err != nil {
 		return &emptypb.Empty{}, status.Errorf(codes.InvalidArgument, "invalid token provided")
 	}
 
-	hash, err := h.srv.GetPasswordHash(ctx, email)
+	if !email.ValidateEmail(emailAddress) {
+		return nil, status.Errorf(codes.InvalidArgument, "wrong format of email found in token %v", emailAddress)
+	}
+
+	hash, err := h.srv.GetPasswordHash(ctx, emailAddress)
 	if err != nil {
 		return &emptypb.Empty{}, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
 	}
@@ -198,4 +218,22 @@ func (h *auth) CheckTokenInMetadataV1(ctx context.Context, r *emptypb.Empty) (*e
 	}
 
 	return &emptypb.Empty{}, nil
+}
+
+func (h *auth) CheckIfUserIsAdminV1(ctx context.Context, r *api.CheckIfUserIsAdminRequest) (*api.CheckIfUserIsAdminResponse, error) {
+	if !email.ValidateEmail(r.Email) {
+		return nil, status.Errorf(codes.InvalidArgument, "wrong format of email used")
+	}
+
+	isAdmin, err := h.srv.CheckIfUserIsAdmin(ctx, r.Email)
+
+	if errors.Is(err, authErrors.ErrorNoSuchUser) {
+		return nil, status.Errorf(codes.NotFound, "no user with email %v found", r.Email)
+	}
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+	}
+
+	return &api.CheckIfUserIsAdminResponse{IsAdmin: isAdmin}, nil
 }

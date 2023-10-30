@@ -26,7 +26,8 @@ func main() {
 		certPath      = "cert/localhost.crt"
 		keyPath       = "cert/localhost.key"
 		mongoURI      = "mongodb://localhost:27017"
-		trustedSubnet = ""
+		trustedSubnet = "127.0.0.1/24"
+		jwtSecretKey  = "somesecretkey"
 	)
 	creds, err := credentials.NewServerTLSFromFile(certPath, keyPath)
 	if err != nil {
@@ -61,7 +62,7 @@ func main() {
 	ar := repository.New(collection)
 	as := service.New(ar)
 
-	authServer := handler.New(as)
+	authServer := handler.New(as, jwtSecretKey)
 
 	api.RegisterAuthV1Server(grpcServer, authServer)
 

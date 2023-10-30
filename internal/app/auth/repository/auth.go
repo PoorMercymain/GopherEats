@@ -68,3 +68,21 @@ func (r *auth) UpdateAddress(ctx context.Context, email string, newAddress strin
 
 	return err
 }
+
+func (r *auth) GetIsAdmin(ctx context.Context, email string) (bool, error) {
+	user, err := r.mongo.FindOne(ctx, bson.M{"email": email})
+	if err != nil {
+		return false, err
+	}
+
+	var isAdmin struct {
+		IsAdmin bool `bson:"isAdmin"`
+	}
+
+	err = user.Decode(&isAdmin)
+	if err != nil {
+		return false, err
+	}
+
+	return isAdmin.IsAdmin, nil
+}

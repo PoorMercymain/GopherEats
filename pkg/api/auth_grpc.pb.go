@@ -30,6 +30,7 @@ type AuthV1Client interface {
 	LoginWithOTPV1(ctx context.Context, in *LoginWithOTPRequestV1, opts ...grpc.CallOption) (*LoginResponseV1, error)
 	ChangeAddressV1(ctx context.Context, in *ChangeAddressRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CheckTokenInMetadataV1(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CheckIfUserIsAdminV1(ctx context.Context, in *CheckIfUserIsAdminRequest, opts ...grpc.CallOption) (*CheckIfUserIsAdminResponse, error)
 }
 
 type authV1Client struct {
@@ -94,6 +95,15 @@ func (c *authV1Client) CheckTokenInMetadataV1(ctx context.Context, in *emptypb.E
 	return out, nil
 }
 
+func (c *authV1Client) CheckIfUserIsAdminV1(ctx context.Context, in *CheckIfUserIsAdminRequest, opts ...grpc.CallOption) (*CheckIfUserIsAdminResponse, error) {
+	out := new(CheckIfUserIsAdminResponse)
+	err := c.cc.Invoke(ctx, "/api.v1.AuthV1/CheckIfUserIsAdminV1", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthV1Server is the server API for AuthV1 service.
 // All implementations must embed UnimplementedAuthV1Server
 // for forward compatibility
@@ -104,6 +114,7 @@ type AuthV1Server interface {
 	LoginWithOTPV1(context.Context, *LoginWithOTPRequestV1) (*LoginResponseV1, error)
 	ChangeAddressV1(context.Context, *ChangeAddressRequestV1) (*emptypb.Empty, error)
 	CheckTokenInMetadataV1(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	CheckIfUserIsAdminV1(context.Context, *CheckIfUserIsAdminRequest) (*CheckIfUserIsAdminResponse, error)
 	mustEmbedUnimplementedAuthV1Server()
 }
 
@@ -128,6 +139,9 @@ func (UnimplementedAuthV1Server) ChangeAddressV1(context.Context, *ChangeAddress
 }
 func (UnimplementedAuthV1Server) CheckTokenInMetadataV1(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckTokenInMetadataV1 not implemented")
+}
+func (UnimplementedAuthV1Server) CheckIfUserIsAdminV1(context.Context, *CheckIfUserIsAdminRequest) (*CheckIfUserIsAdminResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckIfUserIsAdminV1 not implemented")
 }
 func (UnimplementedAuthV1Server) mustEmbedUnimplementedAuthV1Server() {}
 
@@ -250,6 +264,24 @@ func _AuthV1_CheckTokenInMetadataV1_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthV1_CheckIfUserIsAdminV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckIfUserIsAdminRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthV1Server).CheckIfUserIsAdminV1(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.v1.AuthV1/CheckIfUserIsAdminV1",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthV1Server).CheckIfUserIsAdminV1(ctx, req.(*CheckIfUserIsAdminRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthV1_ServiceDesc is the grpc.ServiceDesc for AuthV1 service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -280,6 +312,10 @@ var AuthV1_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckTokenInMetadataV1",
 			Handler:    _AuthV1_CheckTokenInMetadataV1_Handler,
+		},
+		{
+			MethodName: "CheckIfUserIsAdminV1",
+			Handler:    _AuthV1_CheckIfUserIsAdminV1_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
