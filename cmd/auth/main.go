@@ -18,7 +18,7 @@ import (
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/repository"
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/service"
 	"github.com/PoorMercymain/GopherEats/internal/pkg/logger"
-	"github.com/PoorMercymain/GopherEats/pkg/api"
+	api "github.com/PoorMercymain/GopherEats/pkg/api/auth"
 )
 
 func main() {
