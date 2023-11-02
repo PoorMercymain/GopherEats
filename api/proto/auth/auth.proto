@@ -8,12 +8,19 @@ import "google/protobuf/empty.proto";
 import "validate.proto"; // it should be in the same directory with the proto file
 
 service AuthV1 {
+    // Register can be used to register a user in GopherEats and get secret key to use in some OTP app
     rpc RegisterV1(RegisterRequestV1) returns (RegisterResponseV1) {}
+    // Login can be used to log in using password
     rpc LoginV1(LoginRequestV1) returns (LoginResponseV1) {}
+    // ChangePassword can be used to change password using email and old password
     rpc ChangePasswordV1(ChangePasswordRequestV1) returns (google.protobuf.Empty) {}
+    // LoginWithOTP can be used to log in using one-time password
     rpc LoginWithOTPV1(LoginWithOTPRequestV1) returns (LoginResponseV1) {}
+    // ChangeAddress can be used to change user address using email and password
     rpc ChangeAddressV1(ChangeAddressRequestV1) returns (google.protobuf.Empty) {}
+    // CheckTokenInMetadata can be used to check JWT token in metadata
     rpc CheckTokenInMetadataV1(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+    // CheckIfUserIsAdmin can be used to check if the user is admin
     rpc CheckIfUserIsAdminV1(CheckIfUserIsAdminRequest) returns (CheckIfUserIsAdminResponse) {}
 }
 
