@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api.v1;
 
-option go_package = "github.com/PoorMercymain/urlshrt/pkg/api";
+option go_package = "github.com/PoorMercymain/GopherEats/pkg/api";
 
 import "google/protobuf/empty.proto";
 import "validate.proto"; // it should be in the same directory with the proto file
