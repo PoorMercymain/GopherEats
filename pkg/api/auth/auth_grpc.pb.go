@@ -4,11 +4,10 @@
 // - protoc             v3.21.12
 // source: auth.proto
 
-package api
+package auth
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -43,7 +42,7 @@ func NewAuthV1Client(cc grpc.ClientConnInterface) AuthV1Client {
 
 func (c *authV1Client) RegisterV1(ctx context.Context, in *RegisterRequestV1, opts ...grpc.CallOption) (*RegisterResponseV1, error) {
 	out := new(RegisterResponseV1)
-	err := c.cc.Invoke(ctx, "/api.v1.AuthV1/RegisterV1", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.auth.v1.AuthV1/RegisterV1", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +51,7 @@ func (c *authV1Client) RegisterV1(ctx context.Context, in *RegisterRequestV1, op
 
 func (c *authV1Client) LoginV1(ctx context.Context, in *LoginRequestV1, opts ...grpc.CallOption) (*LoginResponseV1, error) {
 	out := new(LoginResponseV1)
-	err := c.cc.Invoke(ctx, "/api.v1.AuthV1/LoginV1", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.auth.v1.AuthV1/LoginV1", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +60,7 @@ func (c *authV1Client) LoginV1(ctx context.Context, in *LoginRequestV1, opts ...
 
 func (c *authV1Client) ChangePasswordV1(ctx context.Context, in *ChangePasswordRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.v1.AuthV1/ChangePasswordV1", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.auth.v1.AuthV1/ChangePasswordV1", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +69,7 @@ func (c *authV1Client) ChangePasswordV1(ctx context.Context, in *ChangePasswordR
 
 func (c *authV1Client) LoginWithOTPV1(ctx context.Context, in *LoginWithOTPRequestV1, opts ...grpc.CallOption) (*LoginResponseV1, error) {
 	out := new(LoginResponseV1)
-	err := c.cc.Invoke(ctx, "/api.v1.AuthV1/LoginWithOTPV1", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.auth.v1.AuthV1/LoginWithOTPV1", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +78,7 @@ func (c *authV1Client) LoginWithOTPV1(ctx context.Context, in *LoginWithOTPReque
 
 func (c *authV1Client) ChangeAddressV1(ctx context.Context, in *ChangeAddressRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.v1.AuthV1/ChangeAddressV1", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.auth.v1.AuthV1/ChangeAddressV1", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +87,7 @@ func (c *authV1Client) ChangeAddressV1(ctx context.Context, in *ChangeAddressReq
 
 func (c *authV1Client) CheckTokenInMetadataV1(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.v1.AuthV1/CheckTokenInMetadataV1", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.auth.v1.AuthV1/CheckTokenInMetadataV1", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +96,7 @@ func (c *authV1Client) CheckTokenInMetadataV1(ctx context.Context, in *emptypb.E
 
 func (c *authV1Client) CheckIfUserIsAdminV1(ctx context.Context, in *CheckIfUserIsAdminRequest, opts ...grpc.CallOption) (*CheckIfUserIsAdminResponse, error) {
 	out := new(CheckIfUserIsAdminResponse)
-	err := c.cc.Invoke(ctx, "/api.v1.AuthV1/CheckIfUserIsAdminV1", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.auth.v1.AuthV1/CheckIfUserIsAdminV1", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +165,7 @@ func _AuthV1_RegisterV1_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.v1.AuthV1/RegisterV1",
+		FullMethod: "/api.auth.v1.AuthV1/RegisterV1",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthV1Server).RegisterV1(ctx, req.(*RegisterRequestV1))
@@ -184,7 +183,7 @@ func _AuthV1_LoginV1_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.v1.AuthV1/LoginV1",
+		FullMethod: "/api.auth.v1.AuthV1/LoginV1",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthV1Server).LoginV1(ctx, req.(*LoginRequestV1))
@@ -202,7 +201,7 @@ func _AuthV1_ChangePasswordV1_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.v1.AuthV1/ChangePasswordV1",
+		FullMethod: "/api.auth.v1.AuthV1/ChangePasswordV1",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthV1Server).ChangePasswordV1(ctx, req.(*ChangePasswordRequestV1))
@@ -220,7 +219,7 @@ func _AuthV1_LoginWithOTPV1_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.v1.AuthV1/LoginWithOTPV1",
+		FullMethod: "/api.auth.v1.AuthV1/LoginWithOTPV1",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthV1Server).LoginWithOTPV1(ctx, req.(*LoginWithOTPRequestV1))
@@ -238,7 +237,7 @@ func _AuthV1_ChangeAddressV1_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.v1.AuthV1/ChangeAddressV1",
+		FullMethod: "/api.auth.v1.AuthV1/ChangeAddressV1",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthV1Server).ChangeAddressV1(ctx, req.(*ChangeAddressRequestV1))
@@ -256,7 +255,7 @@ func _AuthV1_CheckTokenInMetadataV1_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.v1.AuthV1/CheckTokenInMetadataV1",
+		FullMethod: "/api.auth.v1.AuthV1/CheckTokenInMetadataV1",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthV1Server).CheckTokenInMetadataV1(ctx, req.(*emptypb.Empty))
@@ -274,7 +273,7 @@ func _AuthV1_CheckIfUserIsAdminV1_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.v1.AuthV1/CheckIfUserIsAdminV1",
+		FullMethod: "/api.auth.v1.AuthV1/CheckIfUserIsAdminV1",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthV1Server).CheckIfUserIsAdminV1(ctx, req.(*CheckIfUserIsAdminRequest))
@@ -286,7 +285,7 @@ func _AuthV1_CheckIfUserIsAdminV1_Handler(srv interface{}, ctx context.Context, 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AuthV1_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.v1.AuthV1",
+	ServiceName: "api.auth.v1.AuthV1",
 	HandlerType: (*AuthV1Server)(nil),
 	Methods: []grpc.MethodDesc{
 		{

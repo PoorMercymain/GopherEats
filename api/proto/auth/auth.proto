@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package api.v1;
+package api.auth.v1;
 
-option go_package = "github.com/PoorMercymain/GopherEats/pkg/api";
+option go_package = "github.com/PoorMercymain/GopherEats/pkg/api/auth";
 
 import "google/protobuf/empty.proto";
 import "validate.proto"; // it should be in the same directory with the proto file

@@ -15,7 +15,7 @@ import (
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/email"
 	authErrors "github.com/PoorMercymain/GopherEats/internal/app/auth/errors"
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/token"
-	"github.com/PoorMercymain/GopherEats/pkg/api"
+	api "github.com/PoorMercymain/GopherEats/pkg/api/auth"
 )
 
 type auth struct {
