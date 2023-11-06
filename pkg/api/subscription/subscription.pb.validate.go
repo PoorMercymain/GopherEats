@@ -270,6 +270,8 @@ func (m *ReadSubscriptionResponseV1) validate(all bool) error {
 
 	// no validation rules for BundleId
 
+	// no validation rules for IsDeleted
+
 	if len(errors) > 0 {
 		return ReadSubscriptionResponseV1MultiError(errors)
 	}
@@ -375,6 +377,8 @@ func (m *ChangeSubscriptionRequestV1) validate(all bool) error {
 	// no validation rules for Email
 
 	// no validation rules for BundleId
+
+	// no validation rules for IsDeleted
 
 	if len(errors) > 0 {
 		return ChangeSubscriptionRequestV1MultiError(errors)

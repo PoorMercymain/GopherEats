@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -20,10 +21,29 @@ import (
 
 func main() {
 	const (
-		certPath    = "cert/localhost.crt"
-		keyPath     = "cert/localhost.key"
-		postgresDSN = "host=localhost dbname=gophereats user=gophereats password=gophereats port=5432 sslmode=disable"
+		certPath       = "cert/localhost.crt"
+		keyPath        = "cert/localhost.key"
+		postgresDSN    = "host=localhost dbname=gophereats user=gophereats password=gophereats port=5432 sslmode=disable"
+		baseDateString = "2023-11-02"
 	)
+
+	baseDate, err := time.Parse("2006-01-02", baseDateString)
+	if err != nil {
+		logger.Logger().Errorln("invalid base date format")
+		return
+	}
+
+	if time.Now().Before(baseDate) {
+		logger.Logger().Errorln("base date should be before current date")
+		return
+	}
+
+	if baseDate.Weekday() != time.Thursday {
+		logger.Logger().Errorln("base date should be thursday")
+		return
+	}
+
+	weekNumber := (int(time.Since(baseDate).Hours()/24) / 7) + 1
 
 	creds, err := credentials.NewClientTLSFromFile(certPath, "localhost")
 	if err != nil {
@@ -79,6 +99,26 @@ func main() {
 		if err != nil {
 			logger.Logger().Errorln(err)
 			ret <- struct{}{}
+		}
+	}()
+
+	go func() {
+		currentTime := time.Now()
+
+		var ticker *time.Ticker
+
+		for currentTime.Weekday() != time.Thursday {
+			<-time.After(24 * time.Hour)
+			currentTime = currentTime.Add(24 * time.Hour)
+			if currentTime.Weekday() == time.Thursday {
+				weekNumber += 1
+			}
+		}
+
+		ticker = time.NewTicker(7 * 24 * time.Hour)
+		for range ticker.C {
+			weekNumber += 1
+			logger.Logger().Infoln("new week:", weekNumber)
 		}
 	}()
 

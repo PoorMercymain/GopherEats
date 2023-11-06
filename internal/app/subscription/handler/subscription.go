@@ -41,7 +41,7 @@ func (h *subscription) CreateSubscriptionV1(ctx context.Context, r *api.CreateSu
 }
 
 func (h *subscription) ReadSubscriptionV1(ctx context.Context, r *api.ReadSubscriptionRequestV1) (*api.ReadSubscriptionResponseV1, error) {
-	bundleID, err := h.srv.ReadSubscription(ctx, r.Email)
+	bundleID, isDeleted, err := h.srv.ReadSubscription(ctx, r.Email)
 
 	if errors.Is(err, subErrors.ErrorNoRowsWhileReading) {
 		return nil, status.Errorf(codes.NotFound, subErrors.ErrorNoRowsWhileReading.Error())
@@ -51,7 +51,7 @@ func (h *subscription) ReadSubscriptionV1(ctx context.Context, r *api.ReadSubscr
 		return nil, status.Errorf(codes.Internal, "something went wrong in subscription service: %v", err)
 	}
 
-	return &api.ReadSubscriptionResponseV1{BundleId: bundleID}, nil
+	return &api.ReadSubscriptionResponseV1{BundleId: bundleID, IsDeleted: isDeleted}, nil
 }
 
 func (h *subscription) ChangeSubscriptionV1(ctx context.Context, r *api.ChangeSubscriptionRequestV1) (*emptypb.Empty, error) {

@@ -21,7 +21,7 @@ func (s *subscription) CreateSubscription(ctx context.Context, email string, bun
 	return s.repo.CreateSubscription(ctx, email, bundleID)
 }
 
-func (s *subscription) ReadSubscription(ctx context.Context, email string) (int64, error) {
+func (s *subscription) ReadSubscription(ctx context.Context, email string) (int64, bool, error) {
 	return s.repo.ReadSubscription(ctx, email)
 }
 
@@ -43,4 +43,8 @@ func (s *subscription) ReadUserData(ctx context.Context, email string) (domain.U
 
 func (s *subscription) ReadBalanceHistory(ctx context.Context, email string, page uint64) ([]*api.HistoryElementV1, error) {
 	return s.repo.ReadBalanceHistory(ctx, email, page)
+}
+
+func (s *subscription) ChargeForSubscription(ctx context.Context) error {
+	return s.repo.ChargeForSubscription(ctx)
 }

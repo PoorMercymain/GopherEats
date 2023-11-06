@@ -118,11 +118,12 @@ func (r *subscription) CreateSubscription(ctx context.Context, email string, bun
 	})
 }
 
-func (r *subscription) ReadSubscription(ctx context.Context, email string) (int64, error) {
+func (r *subscription) ReadSubscription(ctx context.Context, email string) (int64, bool, error) {
 	var bundleID int64
+	var isDeleted bool
 
 	err := r.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
-		err := conn.QueryRow(ctx, "SELECT bundle_id FROM subscriptions WHERE email = $1 AND is_deleted = $2", email, false).Scan(&bundleID)
+		err := conn.QueryRow(ctx, "SELECT bundle_id, is_deleted FROM subscriptions WHERE email = $1", email).Scan(&bundleID, &isDeleted)
 
 		if errors.Is(err, pgx.ErrNoRows) {
 			return subErrors.ErrorNoRowsWhileReading
@@ -136,10 +137,10 @@ func (r *subscription) ReadSubscription(ctx context.Context, email string) (int6
 	})
 
 	if err != nil {
-		return 0, err
+		return 0, false, err
 	}
 
-	return bundleID, nil
+	return bundleID, isDeleted, nil
 }
 
 func (r *subscription) UpdateSubscription(ctx context.Context, email string, bundleID int64) error {
@@ -242,4 +243,57 @@ func (r *subscription) ReadBalanceHistory(ctx context.Context, email string, pag
 		return nil, subErrors.ErrorNoRowsWhileReadingHistory
 	}
 	return history, nil
+}
+
+// TODO: use struct of four channels: one to send bundle_ids to handler, another - to receive the prices, the next - to send emails in handler, and the last - to send email, bundle_id, week_number and address to dishes service
+func (r *subscription) ChargeForSubscription(ctx context.Context) error {
+	return r.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
+		rows, err := conn.Query(ctx, "SELECT email, bundle_id FROM subscriptions WHERE is_deleted = $1", false)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return err
+		}
+
+		var email string
+		var bundleID uint64
+
+		for rows.Next() {
+			err := rows.Scan(&email, &bundleID)
+			if err != nil {
+				return err
+			}
+
+			err = r.RemoveAmountFromBalance(ctx, email, 10) // TODO: use actual price
+
+			if errors.Is(err, subErrors.ErrorNotEnoughFunds) { //TODO: send to email chan
+				err = r.DeleteSubscription(ctx, email)
+				if err != nil {
+					return err
+				}
+			}
+
+			if err != nil {
+				return err
+			}
+			// TODO: send info to dishes service
+		}
+
+		return nil
+	})
+}
+
+func (r *subscription) RemoveAmountFromBalance(ctx context.Context, email string, amount uint64) error {
+	return r.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) error {
+		commandTag, err := tx.Exec(ctx, "UPDATE balances SET current_balance = current_balance - $1 WHERE email = $2 AND is_deleted = $3 AND current_balance > $1", amount, email, false)
+		if err != nil {
+			return err
+		}
+
+		if commandTag.RowsAffected() == 0 {
+			return subErrors.ErrorNotEnoughFunds
+		}
+
+		_, err = tx.Exec(ctx, "INSERT INTO balances_history VALUES($1, $2, $3, $4)", email, amount, "debit", time.Now())
+
+		return err
+	})
 }
