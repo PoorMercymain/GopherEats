@@ -106,3 +106,7 @@ func (s *auth) UpdateAddress(ctx context.Context, email string, password string,
 func (s *auth) CheckIfUserIsAdmin(ctx context.Context, email string) (bool, error) {
 	return s.repo.GetIsAdmin(ctx, email)
 }
+
+func (s *auth) GetAddress(ctx context.Context, email string) (string, error) {
+	return s.repo.GetAddress(ctx, email)
+}

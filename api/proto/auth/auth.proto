@@ -5,7 +5,8 @@ package api.auth.v1;
 option go_package = "github.com/PoorMercymain/GopherEats/pkg/api/auth";
 
 import "google/protobuf/empty.proto";
-import "validate.proto"; // it should be in the same directory with the proto file
+import "validate.proto"; // it should be in 'validate' directory on the same level as the directory with the
+                                  // proto file
 
 service AuthV1 {
     // Register can be used to register a user in GopherEats and get secret key to use in some OTP app
@@ -18,10 +19,13 @@ service AuthV1 {
     rpc LoginWithOTPV1(LoginWithOTPRequestV1) returns (LoginResponseV1) {}
     // ChangeAddress can be used to change user address using email and password
     rpc ChangeAddressV1(ChangeAddressRequestV1) returns (google.protobuf.Empty) {}
-    // CheckTokenInMetadata can be used to check JWT token in metadata
+    // CheckTokenInMetadata can be used to validate JWT in metadata
     rpc CheckTokenInMetadataV1(google.protobuf.Empty) returns (google.protobuf.Empty) {}
     // CheckIfUserIsAdmin can be used to check if the user is admin
-    rpc CheckIfUserIsAdminV1(CheckIfUserIsAdminRequest) returns (CheckIfUserIsAdminResponse) {}
+    rpc CheckIfUserIsAdminV1(CheckIfUserIsAdminRequestV1) returns (CheckIfUserIsAdminResponseV1) {}
+    // GetEmailFromTokenInMetadata can be used to validate JWT in metadata and get email from it
+    rpc GetEmailFromTokenInMetadataV1(google.protobuf.Empty) returns (GetEmailFromTokenInMetadataResponseV1) {}
+    rpc GetAddressV1(GetAddressRequestV1) returns (GetAddressResponseV1) {}
 }
 
 message RegisterRequestV1 {
@@ -60,10 +64,22 @@ message ChangeAddressRequestV1 {
     string new_address = 3 [(validate.rules).string.min_len = 1];
 }
 
-message CheckIfUserIsAdminRequest {
+message CheckIfUserIsAdminRequestV1 {
     string email = 1 [(validate.rules).string.min_len = 1];
 }
 
-message CheckIfUserIsAdminResponse {
+message CheckIfUserIsAdminResponseV1 {
     bool is_admin = 1;
+}
+
+message GetEmailFromTokenInMetadataResponseV1 {
+    string email = 1;
+}
+
+message GetAddressRequestV1 {
+    string email = 1;
+}
+
+message GetAddressResponseV1 {
+    string address = 1;
 }

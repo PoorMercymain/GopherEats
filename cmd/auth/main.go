@@ -26,7 +26,7 @@ func main() {
 		certPath      = "cert/localhost.crt"
 		keyPath       = "cert/localhost.key"
 		mongoURI      = "mongodb://localhost:27017"
-		trustedSubnet = "127.0.0.1/24"
+		trustedSubnet = ""
 		jwtSecretKey  = "somesecretkey"
 	)
 	creds, err := credentials.NewServerTLSFromFile(certPath, keyPath)

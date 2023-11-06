@@ -220,7 +220,7 @@ func (h *auth) CheckTokenInMetadataV1(ctx context.Context, r *emptypb.Empty) (*e
 	return &emptypb.Empty{}, nil
 }
 
-func (h *auth) CheckIfUserIsAdminV1(ctx context.Context, r *api.CheckIfUserIsAdminRequest) (*api.CheckIfUserIsAdminResponse, error) {
+func (h *auth) CheckIfUserIsAdminV1(ctx context.Context, r *api.CheckIfUserIsAdminRequestV1) (*api.CheckIfUserIsAdminResponseV1, error) {
 	if !email.ValidateEmail(r.Email) {
 		return nil, status.Errorf(codes.InvalidArgument, "wrong format of email used")
 	}
@@ -235,5 +235,72 @@ func (h *auth) CheckIfUserIsAdminV1(ctx context.Context, r *api.CheckIfUserIsAdm
 		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
 	}
 
-	return &api.CheckIfUserIsAdminResponse{IsAdmin: isAdmin}, nil
+	return &api.CheckIfUserIsAdminResponseV1{IsAdmin: isAdmin}, nil
+}
+
+func (h *auth) GetEmailFromTokenInMetadataV1(ctx context.Context, r *emptypb.Empty) (*api.GetEmailFromTokenInMetadataResponseV1, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Errorf(codes.NotFound, "metadata not found")
+	}
+
+	tokenSlice := md.Get("authorization") // token should be under "authorization" in metadata
+	if len(tokenSlice) != 1 {             // only one token allowed
+		return nil, status.Errorf(codes.InvalidArgument, "metadata should contain one token under \"authorization\" key")
+	}
+
+	providedToken := tokenSlice[0]
+
+	emailAddress, passwordHash, err := token.GetAuthDataFromJWT(providedToken, h.jwtSecretKey)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid token provided")
+	}
+
+	if !email.ValidateEmail(emailAddress) {
+		return nil, status.Errorf(codes.InvalidArgument, "wrong format of email found in token %v", emailAddress)
+	}
+
+	hash, err := h.srv.GetPasswordHash(ctx, emailAddress)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+	}
+
+	if hash != passwordHash {
+		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", authErrors.ErrorWrongToken)
+	}
+
+	return &api.GetEmailFromTokenInMetadataResponseV1{Email: emailAddress}, nil
+}
+
+func (h *auth) GetAddressV1(ctx context.Context, r *api.GetAddressRequestV1) (*api.GetAddressResponseV1, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Errorf(codes.InvalidArgument, "metadata was not provided")
+	}
+
+	c := metadata.NewOutgoingContext(ctx, md)
+
+	emailResp, err := h.GetEmailFromTokenInMetadataV1(c, &emptypb.Empty{})
+	if err != nil {
+		return nil, err
+	}
+
+	c = metadata.NewOutgoingContext(ctx, md)
+
+	isAdminResp, err := h.CheckIfUserIsAdminV1(c, &api.CheckIfUserIsAdminRequestV1{Email: emailResp.Email})
+	if err != nil {
+		return nil, err
+	}
+
+	if (emailResp.Email != r.Email) && !isAdminResp.IsAdmin {
+		return nil, status.Errorf(codes.InvalidArgument, "email in token and request does not match")
+	}
+
+	address, err := h.srv.GetAddress(ctx, r.Email)
+
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+	}
+
+	return &api.GetAddressResponseV1{Address: address}, nil
 }

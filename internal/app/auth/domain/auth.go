@@ -10,6 +10,7 @@ type AuthService interface {
 	LoginWithOTP(ctx context.Context, email string, otpCode string) error
 	UpdateAddress(ctx context.Context, email string, password string, newAddress string) error
 	CheckIfUserIsAdmin(ctx context.Context, email string) (bool, error)
+	GetAddress(ctx context.Context, email string) (string, error)
 }
 
 type AuthRepository interface {
@@ -19,4 +20,5 @@ type AuthRepository interface {
 	GetSecretKey(ctx context.Context, email string) (string, error)
 	UpdateAddress(ctx context.Context, email string, newAddress string) error
 	GetIsAdmin(ctx context.Context, email string) (bool, error)
+	GetAddress(ctx context.Context, email string) (string, error)
 }

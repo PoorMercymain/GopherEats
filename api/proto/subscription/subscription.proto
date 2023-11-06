@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package api.subscription.v1;
+
+option go_package = "github.com/PoorMercymain/GopherEats/pkg/api/subscription";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "validate.proto"; // it should be in the same directory with the proto file
+
+service SubscriptionV1 {
+  rpc CreateSubscriptionV1(CreateSubscriptionRequestV1) returns (google.protobuf.Empty) {}
+  rpc ReadSubscriptionV1(ReadSubscriptionRequestV1) returns (ReadSubscriptionResponseV1) {}
+  rpc ChangeSubscriptionV1(ChangeSubscriptionRequestV1) returns (google.protobuf.Empty) {}
+  rpc CancelSubscriptionV1(CancelSubscriptionRequestV1) returns (google.protobuf.Empty) {}
+  rpc AddBalanceV1(AddBalanceRequestV1) returns (google.protobuf.Empty) {}
+  rpc ReadUserDataV1(ReadUserDataRequestV1) returns (ReadUserDataResponseV1) {}
+  rpc ReadBalanceHistoryV1(ReadBalanceHistoryRequestV1) returns (ReadBalanceHistoryResponseV1) {}
+}
+
+message CreateSubscriptionRequestV1 {
+  string email = 1;
+  int64 bundle_id = 2;
+}
+
+message ReadSubscriptionRequestV1 {
+  string email = 1;
+}
+
+message ReadSubscriptionResponseV1 {
+  int64 bundle_id = 1;
+}
+
+message ChangeSubscriptionRequestV1 {
+  string email = 1;
+  int64 bundle_id = 2;
+}
+
+message CancelSubscriptionRequestV1 {
+  string email = 1;
+}
+
+message AddBalanceRequestV1 {
+  string email = 1;
+  uint64 amount = 2;
+}
+
+message ReadUserDataRequestV1 {
+  string email = 1;
+}
+
+message ReadUserDataResponseV1 {
+  string address = 1;
+  int64 bundle_id = 2;
+  uint64 balance = 3;
+}
+
+message ReadBalanceHistoryRequestV1 {
+  string email = 1;
+  uint64 page = 2;
+}
+
+message ReadBalanceHistoryResponseV1 {
+  repeated HistoryElementV1 history = 1;
+}
+
+message HistoryElementV1 {
+  string email = 1;
+  uint64 amount = 2;
+  string operation = 3;
+  string made_at = 4;
+}

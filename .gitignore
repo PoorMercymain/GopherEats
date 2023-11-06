@@ -5,6 +5,9 @@
 # GoLand files
 .idea/*
 
+# VS Code files
+.vscode/*
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -28,10 +31,13 @@ go.work
 *.log
 
 # protoc-gen-validate proto file
-api/proto/auth/validate.proto
+api/proto/validate/validate.proto
 
 # certificate files
 cert/*
 
 # Mongo data
 /deployments/gophereats-mongo
+
+# Postgres data
+/deployments/gophereats-postgres

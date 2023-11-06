@@ -8,6 +8,7 @@ package auth
 
 import (
 	context "context"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -23,13 +24,23 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthV1Client interface {
+	// Register can be used to register a user in GopherEats and get secret key to use in some OTP app
 	RegisterV1(ctx context.Context, in *RegisterRequestV1, opts ...grpc.CallOption) (*RegisterResponseV1, error)
+	// Login can be used to log in using password
 	LoginV1(ctx context.Context, in *LoginRequestV1, opts ...grpc.CallOption) (*LoginResponseV1, error)
+	// ChangePassword can be used to change password using email and old password
 	ChangePasswordV1(ctx context.Context, in *ChangePasswordRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// LoginWithOTP can be used to log in using one-time password
 	LoginWithOTPV1(ctx context.Context, in *LoginWithOTPRequestV1, opts ...grpc.CallOption) (*LoginResponseV1, error)
+	// ChangeAddress can be used to change user address using email and password
 	ChangeAddressV1(ctx context.Context, in *ChangeAddressRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// CheckTokenInMetadata can be used to validate JWT in metadata
 	CheckTokenInMetadataV1(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	CheckIfUserIsAdminV1(ctx context.Context, in *CheckIfUserIsAdminRequest, opts ...grpc.CallOption) (*CheckIfUserIsAdminResponse, error)
+	// CheckIfUserIsAdmin can be used to check if the user is admin
+	CheckIfUserIsAdminV1(ctx context.Context, in *CheckIfUserIsAdminRequestV1, opts ...grpc.CallOption) (*CheckIfUserIsAdminResponseV1, error)
+	// GetEmailFromTokenInMetadata can be used to validate JWT in metadata and get email from it
+	GetEmailFromTokenInMetadataV1(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetEmailFromTokenInMetadataResponseV1, error)
+	GetAddressV1(ctx context.Context, in *GetAddressRequestV1, opts ...grpc.CallOption) (*GetAddressResponseV1, error)
 }
 
 type authV1Client struct {
@@ -94,9 +105,27 @@ func (c *authV1Client) CheckTokenInMetadataV1(ctx context.Context, in *emptypb.E
 	return out, nil
 }
 
-func (c *authV1Client) CheckIfUserIsAdminV1(ctx context.Context, in *CheckIfUserIsAdminRequest, opts ...grpc.CallOption) (*CheckIfUserIsAdminResponse, error) {
-	out := new(CheckIfUserIsAdminResponse)
+func (c *authV1Client) CheckIfUserIsAdminV1(ctx context.Context, in *CheckIfUserIsAdminRequestV1, opts ...grpc.CallOption) (*CheckIfUserIsAdminResponseV1, error) {
+	out := new(CheckIfUserIsAdminResponseV1)
 	err := c.cc.Invoke(ctx, "/api.auth.v1.AuthV1/CheckIfUserIsAdminV1", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authV1Client) GetEmailFromTokenInMetadataV1(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetEmailFromTokenInMetadataResponseV1, error) {
+	out := new(GetEmailFromTokenInMetadataResponseV1)
+	err := c.cc.Invoke(ctx, "/api.auth.v1.AuthV1/GetEmailFromTokenInMetadataV1", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authV1Client) GetAddressV1(ctx context.Context, in *GetAddressRequestV1, opts ...grpc.CallOption) (*GetAddressResponseV1, error) {
+	out := new(GetAddressResponseV1)
+	err := c.cc.Invoke(ctx, "/api.auth.v1.AuthV1/GetAddressV1", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -107,13 +136,23 @@ func (c *authV1Client) CheckIfUserIsAdminV1(ctx context.Context, in *CheckIfUser
 // All implementations must embed UnimplementedAuthV1Server
 // for forward compatibility
 type AuthV1Server interface {
+	// Register can be used to register a user in GopherEats and get secret key to use in some OTP app
 	RegisterV1(context.Context, *RegisterRequestV1) (*RegisterResponseV1, error)
+	// Login can be used to log in using password
 	LoginV1(context.Context, *LoginRequestV1) (*LoginResponseV1, error)
+	// ChangePassword can be used to change password using email and old password
 	ChangePasswordV1(context.Context, *ChangePasswordRequestV1) (*emptypb.Empty, error)
+	// LoginWithOTP can be used to log in using one-time password
 	LoginWithOTPV1(context.Context, *LoginWithOTPRequestV1) (*LoginResponseV1, error)
+	// ChangeAddress can be used to change user address using email and password
 	ChangeAddressV1(context.Context, *ChangeAddressRequestV1) (*emptypb.Empty, error)
+	// CheckTokenInMetadata can be used to validate JWT in metadata
 	CheckTokenInMetadataV1(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
-	CheckIfUserIsAdminV1(context.Context, *CheckIfUserIsAdminRequest) (*CheckIfUserIsAdminResponse, error)
+	// CheckIfUserIsAdmin can be used to check if the user is admin
+	CheckIfUserIsAdminV1(context.Context, *CheckIfUserIsAdminRequestV1) (*CheckIfUserIsAdminResponseV1, error)
+	// GetEmailFromTokenInMetadata can be used to validate JWT in metadata and get email from it
+	GetEmailFromTokenInMetadataV1(context.Context, *emptypb.Empty) (*GetEmailFromTokenInMetadataResponseV1, error)
+	GetAddressV1(context.Context, *GetAddressRequestV1) (*GetAddressResponseV1, error)
 	mustEmbedUnimplementedAuthV1Server()
 }
 
@@ -139,8 +178,14 @@ func (UnimplementedAuthV1Server) ChangeAddressV1(context.Context, *ChangeAddress
 func (UnimplementedAuthV1Server) CheckTokenInMetadataV1(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckTokenInMetadataV1 not implemented")
 }
-func (UnimplementedAuthV1Server) CheckIfUserIsAdminV1(context.Context, *CheckIfUserIsAdminRequest) (*CheckIfUserIsAdminResponse, error) {
+func (UnimplementedAuthV1Server) CheckIfUserIsAdminV1(context.Context, *CheckIfUserIsAdminRequestV1) (*CheckIfUserIsAdminResponseV1, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckIfUserIsAdminV1 not implemented")
+}
+func (UnimplementedAuthV1Server) GetEmailFromTokenInMetadataV1(context.Context, *emptypb.Empty) (*GetEmailFromTokenInMetadataResponseV1, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEmailFromTokenInMetadataV1 not implemented")
+}
+func (UnimplementedAuthV1Server) GetAddressV1(context.Context, *GetAddressRequestV1) (*GetAddressResponseV1, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAddressV1 not implemented")
 }
 func (UnimplementedAuthV1Server) mustEmbedUnimplementedAuthV1Server() {}
 
@@ -264,7 +309,7 @@ func _AuthV1_CheckTokenInMetadataV1_Handler(srv interface{}, ctx context.Context
 }
 
 func _AuthV1_CheckIfUserIsAdminV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CheckIfUserIsAdminRequest)
+	in := new(CheckIfUserIsAdminRequestV1)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -276,7 +321,43 @@ func _AuthV1_CheckIfUserIsAdminV1_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/api.auth.v1.AuthV1/CheckIfUserIsAdminV1",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthV1Server).CheckIfUserIsAdminV1(ctx, req.(*CheckIfUserIsAdminRequest))
+		return srv.(AuthV1Server).CheckIfUserIsAdminV1(ctx, req.(*CheckIfUserIsAdminRequestV1))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthV1_GetEmailFromTokenInMetadataV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthV1Server).GetEmailFromTokenInMetadataV1(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.auth.v1.AuthV1/GetEmailFromTokenInMetadataV1",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthV1Server).GetEmailFromTokenInMetadataV1(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthV1_GetAddressV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAddressRequestV1)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthV1Server).GetAddressV1(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.auth.v1.AuthV1/GetAddressV1",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthV1Server).GetAddressV1(ctx, req.(*GetAddressRequestV1))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -315,6 +396,14 @@ var AuthV1_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckIfUserIsAdminV1",
 			Handler:    _AuthV1_CheckIfUserIsAdminV1_Handler,
+		},
+		{
+			MethodName: "GetEmailFromTokenInMetadataV1",
+			Handler:    _AuthV1_GetEmailFromTokenInMetadataV1_Handler,
+		},
+		{
+			MethodName: "GetAddressV1",
+			Handler:    _AuthV1_GetAddressV1_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

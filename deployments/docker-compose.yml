@@ -7,3 +7,15 @@ services:
       - "27017:27017"
     volumes:
       - ./gophereats-mongo:/data/db
+  postgres:
+    image: postgres:13.6
+    container_name: gophereats-postgres
+    environment:
+      POSTGRES_USER: gophereats
+      POSTGRES_PASSWORD: gophereats
+      POSTGRES_DB: gophereats
+    volumes:
+      - ./gophereats-postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    command: [ "postgres", "-c", "log_statement=all" ]
