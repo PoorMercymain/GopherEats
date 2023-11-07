@@ -1,5 +1,3 @@
 version: v1
-# <snip>
 deps:
   - buf.build/bufbuild/protovalidate
-# <snip>
