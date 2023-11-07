@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SubscriptionV1Client interface {
-	// CreateSubscriptionV1 can be used to create a subscription using user email and bundle_is
+	// CreateSubscriptionV1 can be used to create a subscription using user email and bundle_id
 	CreateSubscriptionV1(ctx context.Context, in *CreateSubscriptionRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// ReadSubscriptionV1 can be used to read user subscription info (bundle_id and is_deleted)
 	ReadSubscriptionV1(ctx context.Context, in *ReadSubscriptionRequestV1, opts ...grpc.CallOption) (*ReadSubscriptionResponseV1, error)
@@ -114,7 +114,7 @@ func (c *subscriptionV1Client) ReadBalanceHistoryV1(ctx context.Context, in *Rea
 // All implementations must embed UnimplementedSubscriptionV1Server
 // for forward compatibility
 type SubscriptionV1Server interface {
-	// CreateSubscriptionV1 can be used to create a subscription using user email and bundle_is
+	// CreateSubscriptionV1 can be used to create a subscription using user email and bundle_id
 	CreateSubscriptionV1(context.Context, *CreateSubscriptionRequestV1) (*emptypb.Empty, error)
 	// ReadSubscriptionV1 can be used to read user subscription info (bundle_id and is_deleted)
 	ReadSubscriptionV1(context.Context, *ReadSubscriptionRequestV1) (*ReadSubscriptionResponseV1, error)
