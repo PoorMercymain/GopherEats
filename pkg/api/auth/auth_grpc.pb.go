@@ -8,7 +8,6 @@ package auth
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -40,6 +39,7 @@ type AuthV1Client interface {
 	CheckIfUserIsAdminV1(ctx context.Context, in *CheckIfUserIsAdminRequestV1, opts ...grpc.CallOption) (*CheckIfUserIsAdminResponseV1, error)
 	// GetEmailFromTokenInMetadata can be used to validate JWT in metadata and get email from it
 	GetEmailFromTokenInMetadataV1(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetEmailFromTokenInMetadataResponseV1, error)
+	// GetAddressV1 can be used to get addres of a specific user
 	GetAddressV1(ctx context.Context, in *GetAddressRequestV1, opts ...grpc.CallOption) (*GetAddressResponseV1, error)
 }
 
@@ -152,6 +152,7 @@ type AuthV1Server interface {
 	CheckIfUserIsAdminV1(context.Context, *CheckIfUserIsAdminRequestV1) (*CheckIfUserIsAdminResponseV1, error)
 	// GetEmailFromTokenInMetadata can be used to validate JWT in metadata and get email from it
 	GetEmailFromTokenInMetadataV1(context.Context, *emptypb.Empty) (*GetEmailFromTokenInMetadataResponseV1, error)
+	// GetAddressV1 can be used to get addres of a specific user
 	GetAddressV1(context.Context, *GetAddressRequestV1) (*GetAddressResponseV1, error)
 	mustEmbedUnimplementedAuthV1Server()
 }

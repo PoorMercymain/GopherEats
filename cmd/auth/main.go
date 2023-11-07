@@ -19,6 +19,7 @@ import (
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/service"
 	"github.com/PoorMercymain/GopherEats/internal/pkg/logger"
 	api "github.com/PoorMercymain/GopherEats/pkg/api/auth"
+	"github.com/bufbuild/protovalidate-go"
 )
 
 func main() {
@@ -33,7 +34,14 @@ func main() {
 	if err != nil {
 		logger.Logger().Fatalln("Failed to setup tls:", err)
 	}
-	grpcServer := grpc.NewServer(grpc.Creds(creds), grpc.ChainUnaryInterceptor(interceptor.ValidateRequest, interceptor.CheckCIDR(trustedSubnet)))
+
+	validator, err := protovalidate.New()
+	if err != nil {
+		logger.Logger().Fatalln("Failed to create validator:", err)
+		return
+	}
+
+	grpcServer := grpc.NewServer(grpc.Creds(creds), grpc.ChainUnaryInterceptor(interceptor.ValidateRequest(validator), interceptor.CheckCIDR(trustedSubnet)))
 
 	clientOptions := options.Client().ApplyURI(mongoURI)
 	ctx := context.Background()

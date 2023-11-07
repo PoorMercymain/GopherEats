@@ -55,7 +55,7 @@ func (h *subscription) ReadSubscriptionV1(ctx context.Context, r *api.ReadSubscr
 }
 
 func (h *subscription) ChangeSubscriptionV1(ctx context.Context, r *api.ChangeSubscriptionRequestV1) (*emptypb.Empty, error) {
-	err := h.srv.UpdateSubscription(ctx, r.Email, r.BundleId)
+	err := h.srv.UpdateSubscription(ctx, r.Email, r.BundleId, r.IsDeleted)
 
 	if errors.Is(err, subErrors.ErrorNoRowsUpdated) {
 		return nil, status.Errorf(codes.NotFound, subErrors.ErrorNoRowsUpdated.Error())

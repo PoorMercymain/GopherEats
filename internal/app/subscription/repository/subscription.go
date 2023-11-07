@@ -143,9 +143,9 @@ func (r *subscription) ReadSubscription(ctx context.Context, email string) (int6
 	return bundleID, isDeleted, nil
 }
 
-func (r *subscription) UpdateSubscription(ctx context.Context, email string, bundleID int64) error {
+func (r *subscription) UpdateSubscription(ctx context.Context, email string, bundleID int64, isDeleted bool) error {
 	return r.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) error {
-		commandTag, err := tx.Exec(ctx, "UPDATE subscriptions SET bundle_id = $1 WHERE email = $2", bundleID, email)
+		commandTag, err := tx.Exec(ctx, "UPDATE subscriptions SET bundle_id = $1, is_deleted = $2 WHERE email = $3", bundleID, isDeleted, email)
 		if err != nil {
 			return err
 		}

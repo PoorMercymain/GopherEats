@@ -17,6 +17,7 @@ import (
 	"github.com/PoorMercymain/GopherEats/internal/pkg/logger"
 	authApi "github.com/PoorMercymain/GopherEats/pkg/api/auth"
 	subscriptionApi "github.com/PoorMercymain/GopherEats/pkg/api/subscription"
+	"github.com/bufbuild/protovalidate-go"
 )
 
 func main() {
@@ -65,7 +66,14 @@ func main() {
 		logger.Logger().Fatalln("Failed to setup tls:", err)
 		return
 	}
-	grpcServer := grpc.NewServer(grpc.Creds(creds), grpc.ChainUnaryInterceptor(interceptor.ValidateRequestEmail(client)))
+
+	validator, err := protovalidate.New()
+	if err != nil {
+		logger.Logger().Fatalln("Failed to create validator:", err)
+		return
+	}
+
+	grpcServer := grpc.NewServer(grpc.Creds(creds), grpc.ChainUnaryInterceptor(interceptor.ValidateRequestEmail(client), interceptor.ValidateRequest(validator)))
 
 	pgPool, err := repository.DB(postgresDSN)
 	if err != nil {
@@ -102,7 +110,7 @@ func main() {
 		}
 	}()
 
-	go func() {
+	go func() { // TODO: move it to handler to communicate with other service from there
 		currentTime := time.Now()
 
 		var ticker *time.Ticker
@@ -118,7 +126,7 @@ func main() {
 		ticker = time.NewTicker(7 * 24 * time.Hour)
 		for range ticker.C {
 			weekNumber += 1
-			logger.Logger().Infoln("new week:", weekNumber)
+			logger.Logger().Infoln("new week:", weekNumber) // TODO: use func to charge for all subscriptions, send messages to kafka and send emails if not enough funds
 		}
 	}()
 

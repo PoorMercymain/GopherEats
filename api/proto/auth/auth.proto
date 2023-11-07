@@ -5,8 +5,7 @@ package api.auth.v1;
 option go_package = "github.com/PoorMercymain/GopherEats/pkg/api/auth";
 
 import "google/protobuf/empty.proto";
-import "validate.proto"; // it should be in 'validate' directory on the same level as the directory with the
-                                  // proto file
+import "buf/validate/validate.proto";
 
 service AuthV1 {
     // Register can be used to register a user in GopherEats and get secret key to use in some OTP app
@@ -25,47 +24,48 @@ service AuthV1 {
     rpc CheckIfUserIsAdminV1(CheckIfUserIsAdminRequestV1) returns (CheckIfUserIsAdminResponseV1) {}
     // GetEmailFromTokenInMetadata can be used to validate JWT in metadata and get email from it
     rpc GetEmailFromTokenInMetadataV1(google.protobuf.Empty) returns (GetEmailFromTokenInMetadataResponseV1) {}
+    // GetAddressV1 can be used to get addres of a specific user
     rpc GetAddressV1(GetAddressRequestV1) returns (GetAddressResponseV1) {}
 }
 
 message RegisterRequestV1 {
-    string email = 1 [(validate.rules).string.min_len = 1];
-    string password = 2 [(validate.rules).string.min_len = 1];
-    string address = 3 [(validate.rules).string.min_len = 1];
+    string email = 1 [(buf.validate.field).string.min_len = 5];
+    string password = 2 [(buf.validate.field).string.min_len = 1];
+    string address = 3 [(buf.validate.field).string.min_len = 1];
 }
 
 message RegisterResponseV1 {
-    string otp_secret_key = 1 [(validate.rules).string.min_len = 1];
+    string otp_secret_key = 1 [(buf.validate.field).string.min_len = 1];
 }
 
 message LoginRequestV1 {
-    string email = 1 [(validate.rules).string.min_len = 1];
-    string password = 2 [(validate.rules).string.min_len = 1];
+    string email = 1 [(buf.validate.field).string.min_len = 5];
+    string password = 2 [(buf.validate.field).string.min_len = 1];
 }
 
 message LoginResponseV1 {
-    string token = 1 [(validate.rules).string.min_len = 3];
+    string token = 1 [(buf.validate.field).string.min_len = 3];
 }
 
 message ChangePasswordRequestV1 {
-    string email = 1 [(validate.rules).string.min_len = 1];
-    string old_password = 2 [(validate.rules).string.min_len = 1];
-    string new_password = 3 [(validate.rules).string.min_len = 1];
+    string email = 1 [(buf.validate.field).string.min_len = 5];
+    string old_password = 2 [(buf.validate.field).string.min_len = 1];
+    string new_password = 3 [(buf.validate.field).string.min_len = 1];
 }
 
 message LoginWithOTPRequestV1 {
-    string email = 1 [(validate.rules).string.min_len = 1];
-    string otp_code = 2 [(validate.rules).string.min_len = 6, (validate.rules).string.max_len = 6];
+    string email = 1 [(buf.validate.field).string.min_len = 1];
+    string otp_code = 2 [(buf.validate.field).string.min_len = 6, (buf.validate.field).string.max_len = 6];
 }
 
 message ChangeAddressRequestV1 {
-    string email = 1 [(validate.rules).string.min_len = 1];
-    string password = 2 [(validate.rules).string.min_len = 1];
-    string new_address = 3 [(validate.rules).string.min_len = 1];
+    string email = 1 [(buf.validate.field).string.min_len = 5];
+    string password = 2 [(buf.validate.field).string.min_len = 1];
+    string new_address = 3 [(buf.validate.field).string.min_len = 1];
 }
 
 message CheckIfUserIsAdminRequestV1 {
-    string email = 1 [(validate.rules).string.min_len = 1];
+    string email = 1 [(buf.validate.field).string.min_len = 5];
 }
 
 message CheckIfUserIsAdminResponseV1 {
@@ -73,13 +73,13 @@ message CheckIfUserIsAdminResponseV1 {
 }
 
 message GetEmailFromTokenInMetadataResponseV1 {
-    string email = 1;
+    string email = 1 [(buf.validate.field).string.min_len = 5];
 }
 
 message GetAddressRequestV1 {
-    string email = 1;
+    string email = 1 [(buf.validate.field).string.min_len = 5];
 }
 
 message GetAddressResponseV1 {
-    string address = 1;
+    string address = 1 [(buf.validate.field).string.min_len = 1];
 }

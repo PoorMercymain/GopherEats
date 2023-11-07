@@ -25,8 +25,8 @@ func (s *subscription) ReadSubscription(ctx context.Context, email string) (int6
 	return s.repo.ReadSubscription(ctx, email)
 }
 
-func (s *subscription) UpdateSubscription(ctx context.Context, email string, bundleID int64) error {
-	return s.repo.UpdateSubscription(ctx, email, bundleID)
+func (s *subscription) UpdateSubscription(ctx context.Context, email string, bundleID int64, isDeleted bool) error {
+	return s.repo.UpdateSubscription(ctx, email, bundleID, isDeleted)
 }
 
 func (s *subscription) CancelSubscription(ctx context.Context, email string) error {
@@ -45,6 +45,6 @@ func (s *subscription) ReadBalanceHistory(ctx context.Context, email string, pag
 	return s.repo.ReadBalanceHistory(ctx, email, page)
 }
 
-func (s *subscription) ChargeForSubscription(ctx context.Context) error {
+func (s *subscription) ChargeForSubscription(ctx context.Context) error { // TODO: use it every thursday
 	return s.repo.ChargeForSubscription(ctx)
 }
