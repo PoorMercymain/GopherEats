@@ -23,12 +23,19 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SubscriptionV1Client interface {
+	// CreateSubscriptionV1 can be used to create a subscription using user email and bundle_is
 	CreateSubscriptionV1(ctx context.Context, in *CreateSubscriptionRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// ReadSubscriptionV1 can be used to read user subscription info (bundle_id and is_deleted)
 	ReadSubscriptionV1(ctx context.Context, in *ReadSubscriptionRequestV1, opts ...grpc.CallOption) (*ReadSubscriptionResponseV1, error)
+	// ChangeSubscriptionV1 can be used to modify user subscription info (bundle_id to change bundle and is_deleted for cancelling the subscription)
 	ChangeSubscriptionV1(ctx context.Context, in *ChangeSubscriptionRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// CancelSubscriptionV1 can be used to cancel user subscription
 	CancelSubscriptionV1(ctx context.Context, in *CancelSubscriptionRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// AddBalanceV1 can be used to add funds to user balance
 	AddBalanceV1(ctx context.Context, in *AddBalanceRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// ReadUserDataV1 can be used to read user data (address, bundle_id, balance)
 	ReadUserDataV1(ctx context.Context, in *ReadUserDataRequestV1, opts ...grpc.CallOption) (*ReadUserDataResponseV1, error)
+	// ReadBalanceHistoryV1 can be used to read history of user replenishments and debits using email and history page number
 	ReadBalanceHistoryV1(ctx context.Context, in *ReadBalanceHistoryRequestV1, opts ...grpc.CallOption) (*ReadBalanceHistoryResponseV1, error)
 }
 
@@ -107,12 +114,19 @@ func (c *subscriptionV1Client) ReadBalanceHistoryV1(ctx context.Context, in *Rea
 // All implementations must embed UnimplementedSubscriptionV1Server
 // for forward compatibility
 type SubscriptionV1Server interface {
+	// CreateSubscriptionV1 can be used to create a subscription using user email and bundle_is
 	CreateSubscriptionV1(context.Context, *CreateSubscriptionRequestV1) (*emptypb.Empty, error)
+	// ReadSubscriptionV1 can be used to read user subscription info (bundle_id and is_deleted)
 	ReadSubscriptionV1(context.Context, *ReadSubscriptionRequestV1) (*ReadSubscriptionResponseV1, error)
+	// ChangeSubscriptionV1 can be used to modify user subscription info (bundle_id to change bundle and is_deleted for cancelling the subscription)
 	ChangeSubscriptionV1(context.Context, *ChangeSubscriptionRequestV1) (*emptypb.Empty, error)
+	// CancelSubscriptionV1 can be used to cancel user subscription
 	CancelSubscriptionV1(context.Context, *CancelSubscriptionRequestV1) (*emptypb.Empty, error)
+	// AddBalanceV1 can be used to add funds to user balance
 	AddBalanceV1(context.Context, *AddBalanceRequestV1) (*emptypb.Empty, error)
+	// ReadUserDataV1 can be used to read user data (address, bundle_id, balance)
 	ReadUserDataV1(context.Context, *ReadUserDataRequestV1) (*ReadUserDataResponseV1, error)
+	// ReadBalanceHistoryV1 can be used to read history of user replenishments and debits using email and history page number
 	ReadBalanceHistoryV1(context.Context, *ReadBalanceHistoryRequestV1) (*ReadBalanceHistoryResponseV1, error)
 	mustEmbedUnimplementedSubscriptionV1Server()
 }
