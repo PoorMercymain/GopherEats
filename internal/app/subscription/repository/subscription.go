@@ -76,7 +76,7 @@ func (r *subscription) WithTransaction(ctx context.Context, txFunc func(context.
 	}
 	defer func() {
 		err = tx.Rollback(ctx)
-		if !errors.Is(err, pgx.ErrTxClosed) {
+		if !errors.Is(err, pgx.ErrTxClosed) && err != nil {
 			logger.Logger().Errorln(err)
 		}
 	}()
@@ -263,15 +263,18 @@ func (r *subscription) ChargeForSubscription(ctx context.Context) error {
 			}
 
 			err = r.RemoveAmountFromBalance(ctx, email, 10) // TODO: use actual price
+			logger.Logger().Infoln(email)
 
 			if errors.Is(err, subErrors.ErrorNotEnoughFunds) { //TODO: send to email chan
 				err = r.DeleteSubscription(ctx, email)
 				if err != nil {
 					return err
 				}
+				logger.Logger().Infoln(email)
 			}
 
-			if err != nil {
+			if !errors.Is(err, subErrors.ErrorNotEnoughFunds) && err != nil {
+				logger.Logger().Infoln(email)
 				return err
 			}
 			// TODO: send info to dishes service
@@ -283,7 +286,7 @@ func (r *subscription) ChargeForSubscription(ctx context.Context) error {
 
 func (r *subscription) RemoveAmountFromBalance(ctx context.Context, email string, amount uint64) error {
 	return r.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) error {
-		commandTag, err := tx.Exec(ctx, "UPDATE balances SET current_balance = current_balance - $1 WHERE email = $2 AND is_deleted = $3 AND current_balance > $1", amount, email, false)
+		commandTag, err := tx.Exec(ctx, "UPDATE balances SET current_balance = current_balance - $1 WHERE email = $2 AND current_balance > $1", amount, email)
 		if err != nil {
 			return err
 		}
@@ -293,7 +296,10 @@ func (r *subscription) RemoveAmountFromBalance(ctx context.Context, email string
 		}
 
 		_, err = tx.Exec(ctx, "INSERT INTO balances_history VALUES($1, $2, $3, $4)", email, amount, "debit", time.Now())
+		if err != nil {
+			return err
+		}
 
-		return err
+		return nil
 	})
 }

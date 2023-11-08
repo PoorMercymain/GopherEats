@@ -27,6 +27,10 @@ func main() {
 		keyPath        = "cert/localhost.key"
 		postgresDSN    = "host=localhost dbname=gophereats user=gophereats password=gophereats port=5432 sslmode=disable"
 		baseDateString = "2023-11-02"
+		smtpServer     = ""
+		smtpPort       = ""
+		smtpUsername   = ""
+		smtpPassword   = ""
 	)
 
 	baseDate, err := time.Parse("2006-01-02", baseDateString)
@@ -85,7 +89,7 @@ func main() {
 	subRep := repository.New(pgPool)
 	subSrv := service.New(subRep)
 
-	subscriptionServer := handler.New(subSrv, client)
+	subscriptionServer := handler.New(subSrv, client, &weekNumber, smtpUsername, smtpPassword, smtpServer, smtpPort)
 
 	subscriptionApi.RegisterSubscriptionV1Server(grpcServer, subscriptionServer)
 
@@ -111,25 +115,7 @@ func main() {
 		}
 	}()
 
-	go func() { // TODO: move it to handler to communicate with other service from there
-		currentTime := time.Now()
-
-		var ticker *time.Ticker
-
-		for currentTime.Weekday() != time.Thursday {
-			<-time.After(24 * time.Hour)
-			currentTime = currentTime.Add(24 * time.Hour)
-			if currentTime.Weekday() == time.Thursday {
-				weekNumber += 1
-			}
-		}
-
-		ticker = time.NewTicker(7 * 24 * time.Hour)
-		for range ticker.C {
-			weekNumber += 1
-			logger.Logger().Infoln("new week:", weekNumber) // TODO: use func to charge for all subscriptions, send messages to kafka and send emails if not enough funds
-		}
-	}()
+	go subscriptionServer.CountWeekAndCharge()
 
 	// waiting for a signal for shutting down or an error to occur
 	<-ret

@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"errors"
+	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/PoorMercymain/GopherEats/internal/app/subscription/domain"
 	subErrors "github.com/PoorMercymain/GopherEats/internal/app/subscription/errors"
+	"github.com/PoorMercymain/GopherEats/internal/pkg/logger"
 	"github.com/PoorMercymain/GopherEats/pkg/api/auth"
 	api "github.com/PoorMercymain/GopherEats/pkg/api/subscription"
 )
@@ -17,13 +19,15 @@ import (
 var _ api.SubscriptionV1Server = (*subscription)(nil)
 
 type subscription struct {
-	srv    domain.SubscriptionService
-	client auth.AuthV1Client
+	srv         domain.SubscriptionService
+	client      auth.AuthV1Client
+	emailSender smtpSender
+	weekNumber  *int
 	api.UnimplementedSubscriptionV1Server
 }
 
-func New(srv domain.SubscriptionService, client auth.AuthV1Client) *subscription {
-	return &subscription{srv: srv, client: client}
+func New(srv domain.SubscriptionService, client auth.AuthV1Client, weekNumber *int, smtpUsername string, smtpPassword string, smtpServer string, smtpPort string) *subscription {
+	return &subscription{srv: srv, client: client, weekNumber: weekNumber, emailSender: smtpSender{username: smtpUsername, password: smtpPassword, server: smtpServer, port: smtpPort}}
 }
 
 func (h *subscription) CreateSubscriptionV1(ctx context.Context, r *api.CreateSubscriptionRequestV1) (*emptypb.Empty, error) {
@@ -116,4 +120,36 @@ func (h *subscription) ReadBalanceHistoryV1(ctx context.Context, r *api.ReadBala
 	}
 
 	return &api.ReadBalanceHistoryResponseV1{History: history}, nil
+}
+
+func (h *subscription) SendEmail(ctx context.Context, to string, subject string, message string) error {
+	return h.emailSender.SendEmail(ctx, to, subject, message)
+}
+
+func (h *subscription) CountWeekAndCharge() {
+	currentTime := time.Now()
+
+	var ticker *time.Ticker
+
+	for currentTime.Weekday() != time.Thursday {
+		<-time.After(24 * time.Hour)
+		currentTime = currentTime.Add(24 * time.Hour)
+		if currentTime.Weekday() == time.Thursday {
+			*h.weekNumber += 1
+		}
+	}
+
+	ticker = time.NewTicker(7 * 24 * time.Hour)
+	for range ticker.C {
+		*h.weekNumber += 1
+		logger.Logger().Infoln("new week:", *h.weekNumber) // TODO: use func to charge for all subscriptions, send messages to kafka and send emails if not enough funds
+		err := h.srv.ChargeForSubscription(context.Background())
+		if errors.Is(err, subErrors.ErrorNotEnoughFunds) {
+			logger.Logger().Errorln("not enough funds on balance", err)
+		}
+
+		if !errors.Is(err, subErrors.ErrorNotEnoughFunds) && err != nil {
+			logger.Logger().Errorln(err)
+		}
+	}
 }
