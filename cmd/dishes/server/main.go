@@ -3,17 +3,21 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
-	"google.golang.org/grpc"
-	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
-	pb "github.com/PoorMercymain/GopherEats/api/gen/v1"
+	"github.com/bufbuild/protovalidate-go"
+	"google.golang.org/grpc"
+
+	"github.com/PoorMercymain/GopherEats/internal/app/dishes/config"
+	"github.com/PoorMercymain/GopherEats/internal/app/dishes/handler"
+	"github.com/PoorMercymain/GopherEats/internal/app/dishes/interceptor"
+	"github.com/PoorMercymain/GopherEats/internal/app/dishes/repository"
 	"github.com/PoorMercymain/GopherEats/internal/pkg/logger"
+	pb "github.com/PoorMercymain/GopherEats/pkg/api/dishes"
 )
 
 var (
@@ -28,46 +32,34 @@ func main() {
 	fmt.Println("Build date: ", buildDate)
 	fmt.Println("Build commit: ", buildCommit)
 
-	var err error
-	var db *sql.DB
+	serverConfig := config.GetServerConfig()
 
-	gRPCHost, dbDSN := config.GetDishesServerConfig()
-
-	if dbDSN != "" {
-		db, err = sql.Open("pgx", dbDSN)
-
-		if err != nil {
-			logger.Logger().Fatalln("Failed to open DB:", err)
-		}
-
-		defer func() {
-			err = db.Close()
-			if err != nil {
-				logger.Logger().Infoln("Failed to close db: ", err)
-			}
-		}()
-
-		//ping
-		err = db.Ping()
-		if err != nil {
-			logger.Logger().Fatalln("Failed to ping DB:", err)
-		}
+	if serverConfig.DatabaseDSN == "" {
+		logger.Logger().Fatalln("Database DSN is missing")
 	}
 
-	appStorage := storage.NewStorage(db, fileStoragePath)
+	if serverConfig.HostGrpc == "" {
+		logger.Logger().Fatalln("GRPC Host address is missing")
+	}
 
-	storageHandler := handlers.NewStorageHandler(appStorage)
+	repo, err := repository.NewDBStorage(serverConfig.DatabaseDSN)
 
 	ctx := context.Background()
 
-	listen, err := net.Listen("tcp", gRPCHost)
+	listen, err := net.Listen("tcp", serverConfig.HostGrpc)
 
 	if err != nil {
-		log.Fatalln(err)
+		logger.Logger().Fatalln("Failed to announce:", err)
 	}
 
-	s := grpc.NewServer(grpc.ChainUnaryInterceptor(interceptors.ValidateRequest))
-	pb.RegisterMetricsServiceV1Server(s, router.NewMetricsServerWithStorage(appStorage))
+	validator, err := protovalidate.New()
+	if err != nil {
+		logger.Logger().Fatalln("Failed to initialize validator:", err)
+	}
+
+	s := grpc.NewServer(grpc.ChainUnaryInterceptor(interceptor.ValidateRequestUnaryServerInterceptor(validator)))
+
+	pb.RegisterDishesServiceV1Server(s, handler.NewDishesServerV1WithStorage(repo))
 
 	go listenAndServeGrpc(ctx, s, listen)
 
@@ -78,20 +70,22 @@ func main() {
 	case <-ctx.Done():
 		err := context.Cause(ctx)
 		if err != nil {
-			log.Fatalln(err)
+			logger.Logger().Fatalln("Context cancelled: ", err)
 		}
 
 	case <-sigChan:
-		fmt.Println("shutdown signal")
+		logger.Logger().Infoln("Shutdown signal")
 
 	}
+
+	s.GracefulStop()
 }
 
 func listenAndServeGrpc(ctx context.Context, s *grpc.Server, listen net.Listener) {
 	_, cancelCtx := context.WithCancelCause(ctx)
 	err := s.Serve(listen)
 	if err != nil {
-		fmt.Println("listenAndServe gRPC err", err)
+		logger.Logger().Infoln("listenAndServe gRPC err: ", err)
 		cancelCtx(err)
 	}
 }

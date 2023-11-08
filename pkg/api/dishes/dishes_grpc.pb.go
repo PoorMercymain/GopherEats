@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: v1/dishes.proto
+// source: dishes/dishes.proto
 
-package apiv1
+package dishesv1
 
 import (
 	context "context"
@@ -20,34 +20,34 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	DishesServiceV1_CreateIngredientV1_FullMethodName       = "/api.v1.DishesServiceV1/CreateIngredientV1"
-	DishesServiceV1_UpdateIngredientV1_FullMethodName       = "/api.v1.DishesServiceV1/UpdateIngredientV1"
-	DishesServiceV1_GetIngredientV1_FullMethodName          = "/api.v1.DishesServiceV1/GetIngredientV1"
-	DishesServiceV1_DeleteIngredientV1_FullMethodName       = "/api.v1.DishesServiceV1/DeleteIngredientV1"
-	DishesServiceV1_ListIngredientsV1_FullMethodName        = "/api.v1.DishesServiceV1/ListIngredientsV1"
-	DishesServiceV1_CreateDishV1_FullMethodName             = "/api.v1.DishesServiceV1/CreateDishV1"
-	DishesServiceV1_UpdateDishV1_FullMethodName             = "/api.v1.DishesServiceV1/UpdateDishV1"
-	DishesServiceV1_GetDishV1_FullMethodName                = "/api.v1.DishesServiceV1/GetDishV1"
-	DishesServiceV1_DeleteDishV1_FullMethodName             = "/api.v1.DishesServiceV1/DeleteDishV1"
-	DishesServiceV1_ListDishesV1_FullMethodName             = "/api.v1.DishesServiceV1/ListDishesV1"
-	DishesServiceV1_CreateBundleV1_FullMethodName           = "/api.v1.DishesServiceV1/CreateBundleV1"
-	DishesServiceV1_UpdateBundleV1_FullMethodName           = "/api.v1.DishesServiceV1/UpdateBundleV1"
-	DishesServiceV1_GetBundleV1_FullMethodName              = "/api.v1.DishesServiceV1/GetBundleV1"
-	DishesServiceV1_DeleteBundleV1_FullMethodName           = "/api.v1.DishesServiceV1/DeleteBundleV1"
-	DishesServiceV1_ListBundlesV1_FullMethodName            = "/api.v1.DishesServiceV1/ListBundlesV1"
-	DishesServiceV1_AddBundleWeeklyDish_FullMethodName      = "/api.v1.DishesServiceV1/AddBundleWeeklyDish"
-	DishesServiceV1_DeleteBundleWeeklyDish_FullMethodName   = "/api.v1.DishesServiceV1/DeleteBundleWeeklyDish"
-	DishesServiceV1_GetBundleWeeklyDishes_FullMethodName    = "/api.v1.DishesServiceV1/GetBundleWeeklyDishes"
-	DishesServiceV1_CreateResourceV1_FullMethodName         = "/api.v1.DishesServiceV1/CreateResourceV1"
-	DishesServiceV1_UpdateResourceV1_FullMethodName         = "/api.v1.DishesServiceV1/UpdateResourceV1"
-	DishesServiceV1_GetResourceV1_FullMethodName            = "/api.v1.DishesServiceV1/GetResourceV1"
-	DishesServiceV1_DeleteResourceV1_FullMethodName         = "/api.v1.DishesServiceV1/DeleteResourceV1"
-	DishesServiceV1_ListResourcesV1_FullMethodName          = "/api.v1.DishesServiceV1/ListResourcesV1"
-	DishesServiceV1_AttachResourceToDishV1_FullMethodName   = "/api.v1.DishesServiceV1/AttachResourceToDishV1"
-	DishesServiceV1_DetachResourceFromDishV1_FullMethodName = "/api.v1.DishesServiceV1/DetachResourceFromDishV1"
-	DishesServiceV1_ListDishResourcesV1_FullMethodName      = "/api.v1.DishesServiceV1/ListDishResourcesV1"
-	DishesServiceV1_SendOrderV1_FullMethodName              = "/api.v1.DishesServiceV1/SendOrderV1"
-	DishesServiceV1_CancelOrderV1_FullMethodName            = "/api.v1.DishesServiceV1/CancelOrderV1"
+	DishesServiceV1_CreateIngredientV1_FullMethodName       = "/api.dishes.v1.DishesServiceV1/CreateIngredientV1"
+	DishesServiceV1_UpdateIngredientV1_FullMethodName       = "/api.dishes.v1.DishesServiceV1/UpdateIngredientV1"
+	DishesServiceV1_GetIngredientV1_FullMethodName          = "/api.dishes.v1.DishesServiceV1/GetIngredientV1"
+	DishesServiceV1_DeleteIngredientV1_FullMethodName       = "/api.dishes.v1.DishesServiceV1/DeleteIngredientV1"
+	DishesServiceV1_ListIngredientsV1_FullMethodName        = "/api.dishes.v1.DishesServiceV1/ListIngredientsV1"
+	DishesServiceV1_CreateDishV1_FullMethodName             = "/api.dishes.v1.DishesServiceV1/CreateDishV1"
+	DishesServiceV1_UpdateDishV1_FullMethodName             = "/api.dishes.v1.DishesServiceV1/UpdateDishV1"
+	DishesServiceV1_GetDishV1_FullMethodName                = "/api.dishes.v1.DishesServiceV1/GetDishV1"
+	DishesServiceV1_DeleteDishV1_FullMethodName             = "/api.dishes.v1.DishesServiceV1/DeleteDishV1"
+	DishesServiceV1_ListDishesV1_FullMethodName             = "/api.dishes.v1.DishesServiceV1/ListDishesV1"
+	DishesServiceV1_CreateBundleV1_FullMethodName           = "/api.dishes.v1.DishesServiceV1/CreateBundleV1"
+	DishesServiceV1_UpdateBundleV1_FullMethodName           = "/api.dishes.v1.DishesServiceV1/UpdateBundleV1"
+	DishesServiceV1_GetBundleV1_FullMethodName              = "/api.dishes.v1.DishesServiceV1/GetBundleV1"
+	DishesServiceV1_DeleteBundleV1_FullMethodName           = "/api.dishes.v1.DishesServiceV1/DeleteBundleV1"
+	DishesServiceV1_ListBundlesV1_FullMethodName            = "/api.dishes.v1.DishesServiceV1/ListBundlesV1"
+	DishesServiceV1_AddBundleWeeklyDishV1_FullMethodName    = "/api.dishes.v1.DishesServiceV1/AddBundleWeeklyDishV1"
+	DishesServiceV1_DeleteBundleWeeklyDishV1_FullMethodName = "/api.dishes.v1.DishesServiceV1/DeleteBundleWeeklyDishV1"
+	DishesServiceV1_GetBundleWeeklyDishesV1_FullMethodName  = "/api.dishes.v1.DishesServiceV1/GetBundleWeeklyDishesV1"
+	DishesServiceV1_CreateResourceV1_FullMethodName         = "/api.dishes.v1.DishesServiceV1/CreateResourceV1"
+	DishesServiceV1_UpdateResourceV1_FullMethodName         = "/api.dishes.v1.DishesServiceV1/UpdateResourceV1"
+	DishesServiceV1_GetResourceV1_FullMethodName            = "/api.dishes.v1.DishesServiceV1/GetResourceV1"
+	DishesServiceV1_DeleteResourceV1_FullMethodName         = "/api.dishes.v1.DishesServiceV1/DeleteResourceV1"
+	DishesServiceV1_ListResourcesV1_FullMethodName          = "/api.dishes.v1.DishesServiceV1/ListResourcesV1"
+	DishesServiceV1_AttachResourceToDishV1_FullMethodName   = "/api.dishes.v1.DishesServiceV1/AttachResourceToDishV1"
+	DishesServiceV1_DetachResourceFromDishV1_FullMethodName = "/api.dishes.v1.DishesServiceV1/DetachResourceFromDishV1"
+	DishesServiceV1_ListDishResourcesV1_FullMethodName      = "/api.dishes.v1.DishesServiceV1/ListDishResourcesV1"
+	DishesServiceV1_SendOrderV1_FullMethodName              = "/api.dishes.v1.DishesServiceV1/SendOrderV1"
+	DishesServiceV1_CancelOrderV1_FullMethodName            = "/api.dishes.v1.DishesServiceV1/CancelOrderV1"
 )
 
 // DishesServiceV1Client is the client API for DishesServiceV1 service.
@@ -69,9 +69,9 @@ type DishesServiceV1Client interface {
 	GetBundleV1(ctx context.Context, in *BundleIdV1, opts ...grpc.CallOption) (*BundleV1, error)
 	DeleteBundleV1(ctx context.Context, in *BundleIdV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ListBundlesV1(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (DishesServiceV1_ListBundlesV1Client, error)
-	AddBundleWeeklyDish(ctx context.Context, in *BundleWeeklyDishV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteBundleWeeklyDish(ctx context.Context, in *BundleWeeklyDishV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	GetBundleWeeklyDishes(ctx context.Context, in *GetBundleWeeklyDishesRequestV1, opts ...grpc.CallOption) (DishesServiceV1_GetBundleWeeklyDishesClient, error)
+	AddBundleWeeklyDishV1(ctx context.Context, in *BundleWeeklyDishV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteBundleWeeklyDishV1(ctx context.Context, in *BundleWeeklyDishV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetBundleWeeklyDishesV1(ctx context.Context, in *GetBundleWeeklyDishesRequestV1, opts ...grpc.CallOption) (DishesServiceV1_GetBundleWeeklyDishesV1Client, error)
 	CreateResourceV1(ctx context.Context, in *CreateResourceRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	UpdateResourceV1(ctx context.Context, in *UpdateResourceRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetResourceV1(ctx context.Context, in *ResourceIdV1, opts ...grpc.CallOption) (*ResourceResponseV1, error)
@@ -296,30 +296,30 @@ func (x *dishesServiceV1ListBundlesV1Client) Recv() (*BundleV1, error) {
 	return m, nil
 }
 
-func (c *dishesServiceV1Client) AddBundleWeeklyDish(ctx context.Context, in *BundleWeeklyDishV1, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *dishesServiceV1Client) AddBundleWeeklyDishV1(ctx context.Context, in *BundleWeeklyDishV1, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, DishesServiceV1_AddBundleWeeklyDish_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, DishesServiceV1_AddBundleWeeklyDishV1_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *dishesServiceV1Client) DeleteBundleWeeklyDish(ctx context.Context, in *BundleWeeklyDishV1, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *dishesServiceV1Client) DeleteBundleWeeklyDishV1(ctx context.Context, in *BundleWeeklyDishV1, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, DishesServiceV1_DeleteBundleWeeklyDish_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, DishesServiceV1_DeleteBundleWeeklyDishV1_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *dishesServiceV1Client) GetBundleWeeklyDishes(ctx context.Context, in *GetBundleWeeklyDishesRequestV1, opts ...grpc.CallOption) (DishesServiceV1_GetBundleWeeklyDishesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &DishesServiceV1_ServiceDesc.Streams[3], DishesServiceV1_GetBundleWeeklyDishes_FullMethodName, opts...)
+func (c *dishesServiceV1Client) GetBundleWeeklyDishesV1(ctx context.Context, in *GetBundleWeeklyDishesRequestV1, opts ...grpc.CallOption) (DishesServiceV1_GetBundleWeeklyDishesV1Client, error) {
+	stream, err := c.cc.NewStream(ctx, &DishesServiceV1_ServiceDesc.Streams[3], DishesServiceV1_GetBundleWeeklyDishesV1_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &dishesServiceV1GetBundleWeeklyDishesClient{stream}
+	x := &dishesServiceV1GetBundleWeeklyDishesV1Client{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -329,16 +329,16 @@ func (c *dishesServiceV1Client) GetBundleWeeklyDishes(ctx context.Context, in *G
 	return x, nil
 }
 
-type DishesServiceV1_GetBundleWeeklyDishesClient interface {
+type DishesServiceV1_GetBundleWeeklyDishesV1Client interface {
 	Recv() (*DishV1, error)
 	grpc.ClientStream
 }
 
-type dishesServiceV1GetBundleWeeklyDishesClient struct {
+type dishesServiceV1GetBundleWeeklyDishesV1Client struct {
 	grpc.ClientStream
 }
 
-func (x *dishesServiceV1GetBundleWeeklyDishesClient) Recv() (*DishV1, error) {
+func (x *dishesServiceV1GetBundleWeeklyDishesV1Client) Recv() (*DishV1, error) {
 	m := new(DishV1)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -501,9 +501,9 @@ type DishesServiceV1Server interface {
 	GetBundleV1(context.Context, *BundleIdV1) (*BundleV1, error)
 	DeleteBundleV1(context.Context, *BundleIdV1) (*emptypb.Empty, error)
 	ListBundlesV1(*emptypb.Empty, DishesServiceV1_ListBundlesV1Server) error
-	AddBundleWeeklyDish(context.Context, *BundleWeeklyDishV1) (*emptypb.Empty, error)
-	DeleteBundleWeeklyDish(context.Context, *BundleWeeklyDishV1) (*emptypb.Empty, error)
-	GetBundleWeeklyDishes(*GetBundleWeeklyDishesRequestV1, DishesServiceV1_GetBundleWeeklyDishesServer) error
+	AddBundleWeeklyDishV1(context.Context, *BundleWeeklyDishV1) (*emptypb.Empty, error)
+	DeleteBundleWeeklyDishV1(context.Context, *BundleWeeklyDishV1) (*emptypb.Empty, error)
+	GetBundleWeeklyDishesV1(*GetBundleWeeklyDishesRequestV1, DishesServiceV1_GetBundleWeeklyDishesV1Server) error
 	CreateResourceV1(context.Context, *CreateResourceRequestV1) (*emptypb.Empty, error)
 	UpdateResourceV1(context.Context, *UpdateResourceRequestV1) (*emptypb.Empty, error)
 	GetResourceV1(context.Context, *ResourceIdV1) (*ResourceResponseV1, error)
@@ -566,14 +566,14 @@ func (UnimplementedDishesServiceV1Server) DeleteBundleV1(context.Context, *Bundl
 func (UnimplementedDishesServiceV1Server) ListBundlesV1(*emptypb.Empty, DishesServiceV1_ListBundlesV1Server) error {
 	return status.Errorf(codes.Unimplemented, "method ListBundlesV1 not implemented")
 }
-func (UnimplementedDishesServiceV1Server) AddBundleWeeklyDish(context.Context, *BundleWeeklyDishV1) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddBundleWeeklyDish not implemented")
+func (UnimplementedDishesServiceV1Server) AddBundleWeeklyDishV1(context.Context, *BundleWeeklyDishV1) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddBundleWeeklyDishV1 not implemented")
 }
-func (UnimplementedDishesServiceV1Server) DeleteBundleWeeklyDish(context.Context, *BundleWeeklyDishV1) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteBundleWeeklyDish not implemented")
+func (UnimplementedDishesServiceV1Server) DeleteBundleWeeklyDishV1(context.Context, *BundleWeeklyDishV1) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteBundleWeeklyDishV1 not implemented")
 }
-func (UnimplementedDishesServiceV1Server) GetBundleWeeklyDishes(*GetBundleWeeklyDishesRequestV1, DishesServiceV1_GetBundleWeeklyDishesServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetBundleWeeklyDishes not implemented")
+func (UnimplementedDishesServiceV1Server) GetBundleWeeklyDishesV1(*GetBundleWeeklyDishesRequestV1, DishesServiceV1_GetBundleWeeklyDishesV1Server) error {
+	return status.Errorf(codes.Unimplemented, "method GetBundleWeeklyDishesV1 not implemented")
 }
 func (UnimplementedDishesServiceV1Server) CreateResourceV1(context.Context, *CreateResourceRequestV1) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateResourceV1 not implemented")
@@ -897,60 +897,60 @@ func (x *dishesServiceV1ListBundlesV1Server) Send(m *BundleV1) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _DishesServiceV1_AddBundleWeeklyDish_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _DishesServiceV1_AddBundleWeeklyDishV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BundleWeeklyDishV1)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DishesServiceV1Server).AddBundleWeeklyDish(ctx, in)
+		return srv.(DishesServiceV1Server).AddBundleWeeklyDishV1(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DishesServiceV1_AddBundleWeeklyDish_FullMethodName,
+		FullMethod: DishesServiceV1_AddBundleWeeklyDishV1_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DishesServiceV1Server).AddBundleWeeklyDish(ctx, req.(*BundleWeeklyDishV1))
+		return srv.(DishesServiceV1Server).AddBundleWeeklyDishV1(ctx, req.(*BundleWeeklyDishV1))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DishesServiceV1_DeleteBundleWeeklyDish_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _DishesServiceV1_DeleteBundleWeeklyDishV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BundleWeeklyDishV1)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DishesServiceV1Server).DeleteBundleWeeklyDish(ctx, in)
+		return srv.(DishesServiceV1Server).DeleteBundleWeeklyDishV1(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DishesServiceV1_DeleteBundleWeeklyDish_FullMethodName,
+		FullMethod: DishesServiceV1_DeleteBundleWeeklyDishV1_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DishesServiceV1Server).DeleteBundleWeeklyDish(ctx, req.(*BundleWeeklyDishV1))
+		return srv.(DishesServiceV1Server).DeleteBundleWeeklyDishV1(ctx, req.(*BundleWeeklyDishV1))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DishesServiceV1_GetBundleWeeklyDishes_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _DishesServiceV1_GetBundleWeeklyDishesV1_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(GetBundleWeeklyDishesRequestV1)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(DishesServiceV1Server).GetBundleWeeklyDishes(m, &dishesServiceV1GetBundleWeeklyDishesServer{stream})
+	return srv.(DishesServiceV1Server).GetBundleWeeklyDishesV1(m, &dishesServiceV1GetBundleWeeklyDishesV1Server{stream})
 }
 
-type DishesServiceV1_GetBundleWeeklyDishesServer interface {
+type DishesServiceV1_GetBundleWeeklyDishesV1Server interface {
 	Send(*DishV1) error
 	grpc.ServerStream
 }
 
-type dishesServiceV1GetBundleWeeklyDishesServer struct {
+type dishesServiceV1GetBundleWeeklyDishesV1Server struct {
 	grpc.ServerStream
 }
 
-func (x *dishesServiceV1GetBundleWeeklyDishesServer) Send(m *DishV1) error {
+func (x *dishesServiceV1GetBundleWeeklyDishesV1Server) Send(m *DishV1) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -1144,7 +1144,7 @@ func _DishesServiceV1_CancelOrderV1_Handler(srv interface{}, ctx context.Context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var DishesServiceV1_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.v1.DishesServiceV1",
+	ServiceName: "api.dishes.v1.DishesServiceV1",
 	HandlerType: (*DishesServiceV1Server)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -1196,12 +1196,12 @@ var DishesServiceV1_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _DishesServiceV1_DeleteBundleV1_Handler,
 		},
 		{
-			MethodName: "AddBundleWeeklyDish",
-			Handler:    _DishesServiceV1_AddBundleWeeklyDish_Handler,
+			MethodName: "AddBundleWeeklyDishV1",
+			Handler:    _DishesServiceV1_AddBundleWeeklyDishV1_Handler,
 		},
 		{
-			MethodName: "DeleteBundleWeeklyDish",
-			Handler:    _DishesServiceV1_DeleteBundleWeeklyDish_Handler,
+			MethodName: "DeleteBundleWeeklyDishV1",
+			Handler:    _DishesServiceV1_DeleteBundleWeeklyDishV1_Handler,
 		},
 		{
 			MethodName: "CreateResourceV1",
@@ -1253,8 +1253,8 @@ var DishesServiceV1_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 		{
-			StreamName:    "GetBundleWeeklyDishes",
-			Handler:       _DishesServiceV1_GetBundleWeeklyDishes_Handler,
+			StreamName:    "GetBundleWeeklyDishesV1",
+			Handler:       _DishesServiceV1_GetBundleWeeklyDishesV1_Handler,
 			ServerStreams: true,
 		},
 		{
@@ -1268,5 +1268,5 @@ var DishesServiceV1_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "v1/dishes.proto",
+	Metadata: "dishes/dishes.proto",
 }

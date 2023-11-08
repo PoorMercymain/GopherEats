@@ -29,8 +29,8 @@ func GetServerConfig() (config serverConfig) {
 		config.HostGrpc = flagConfig.HostGrpc
 	}
 
-	if cfg.DatabaseDSN != "" {
-		dbDSN = cfg.DatabaseDSN
+	if flagConfig.DatabaseDSN != "" {
+		config.DatabaseDSN = flagConfig.DatabaseDSN
 	}
 
 	return
@@ -43,14 +43,19 @@ func getServerFlags(configFile string) (config serverConfig) {
 		flag.StringVar(&configFile, "config", "", "config JSON file path")
 	}
 
+	if flag.Lookup("g") == nil {
+		flag.StringVar(&config.HostGrpc, "d", "", "host address")
+	}
+
 	if flag.Lookup("d") == nil {
-		flag.StringVar(&dbDSN, "d", "", "database address")
+		flag.StringVar(&config.DatabaseDSN, "d", "", "database address")
 	}
 	flag.Parse()
 
 	//sensible defaults to run in absence of flags and env vars
 	configDefaults := &serverConfig{
-		HostGrpc: "localhost:3200",
+		HostGrpc:    "localhost:3200",
+		DatabaseDSN: "host=localhost user=postgres password=postgres sslmode=disable dbname=dishes",
 	}
 
 	fmt.Println("config file ", configFile)
@@ -70,12 +75,12 @@ func getServerFlags(configFile string) (config serverConfig) {
 
 	}
 
-	if gRPCHost == "" {
-		gRPCHost = configDefaults.HostGrpc
+	if config.HostGrpc == "" {
+		config.HostGrpc = configDefaults.HostGrpc
 	}
 
-	if dbDSN == "" {
-		dbDSN = configDefaults.DatabaseDSN
+	if config.DatabaseDSN == "" {
+		config.DatabaseDSN = configDefaults.DatabaseDSN
 	}
 
 	return

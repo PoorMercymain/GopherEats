@@ -4,11 +4,11 @@ managed:
   go_package_prefix:
     except:
       - buf.build/bufbuild/protovalidate
-    default: github.com/PoorMercymain/GopherEats/api/gen
+    default: github.com/PoorMercymain/GopherEats/pkg/api
 plugins:
   - plugin: go
-    out: api/gen
+    out: pkg/api
     opt: paths=source_relative
   - plugin: go-grpc
-    out: api/gen
+    out: pkg/api
     opt: paths=source_relative
