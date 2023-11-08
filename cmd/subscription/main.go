@@ -10,6 +10,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/bufbuild/protovalidate-go"
+
 	"github.com/PoorMercymain/GopherEats/internal/app/subscription/handler"
 	"github.com/PoorMercymain/GopherEats/internal/app/subscription/interceptor"
 	"github.com/PoorMercymain/GopherEats/internal/app/subscription/repository"
@@ -17,7 +19,6 @@ import (
 	"github.com/PoorMercymain/GopherEats/internal/pkg/logger"
 	authApi "github.com/PoorMercymain/GopherEats/pkg/api/auth"
 	subscriptionApi "github.com/PoorMercymain/GopherEats/pkg/api/subscription"
-	"github.com/bufbuild/protovalidate-go"
 )
 
 func main() {

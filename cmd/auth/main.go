@@ -13,13 +13,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/bufbuild/protovalidate-go"
+
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/handler"
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/interceptor"
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/repository"
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/service"
 	"github.com/PoorMercymain/GopherEats/internal/pkg/logger"
 	api "github.com/PoorMercymain/GopherEats/pkg/api/auth"
-	"github.com/bufbuild/protovalidate-go"
 )
 
 func main() {
