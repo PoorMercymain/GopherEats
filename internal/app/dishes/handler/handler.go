@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -42,10 +43,10 @@ func (s *DishesServerV1) DeleteIngredientV1(ctx context.Context, req *pb.Ingredi
 func (s *DishesServerV1) ListIngredientsV1(in *emptypb.Empty, stream pb.DishesServiceV1_ListIngredientsV1Server) (err error) {
 	allIngredients, err := s.service.ListIngredients(stream.Context())
 	for _, i := range allIngredients {
-		err := stream.Send(i)
+		err = stream.Send(i)
 		if err != nil {
 			logger.Logger().Infoln("Error sending message to stream: ", err)
-			return
+			return fmt.Errorf("failed to send message to ListIngredients stream: %w", err)
 		}
 	}
 	return nil
