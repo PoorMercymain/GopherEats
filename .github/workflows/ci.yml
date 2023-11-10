@@ -35,6 +35,7 @@ jobs:
               run: go test ./... -race -coverprofile=coverage.out -covermode=atomic
 
             - name: Upload coverage to Codecov
+              if: always()
               uses: codecov/codecov-action@v3
               env:
                 CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
