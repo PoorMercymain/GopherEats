@@ -245,8 +245,10 @@ func (r *subscription) ReadBalanceHistory(ctx context.Context, email string, pag
 	return history, nil
 }
 
-// TODO: use struct of four channels: one to send bundle_ids to handler, another - to receive the prices, the next - to send emails in handler, and the last - to send email, bundle_id, week_number and address to dishes service
-func (r *subscription) ChargeForSubscription(ctx context.Context) error {
+// TODO: use struct of four channels: one to send bundle_ids to handler (to request their prices from dishes),
+// another - to receive the prices, the next - to send emails to handler to cancel unpaid subscriptions, and the last - to send email, bundle_id to handler,
+// combine them with week_number and address and send to dishes service
+func (r *subscription) ChargeForSubscription(ctx context.Context, notEnoughFundsEmailsChan chan<- string) error {
 	return r.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
 		rows, err := conn.Query(ctx, "SELECT email, bundle_id FROM subscriptions WHERE is_deleted = $1", false)
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
@@ -266,6 +268,8 @@ func (r *subscription) ChargeForSubscription(ctx context.Context) error {
 			logger.Logger().Infoln(email)
 
 			if errors.Is(err, subErrors.ErrorNotEnoughFunds) { //TODO: send to email chan
+				logger.Logger().Infoln("opa")
+				notEnoughFundsEmailsChan <- email
 				err = r.DeleteSubscription(ctx, email)
 				if err != nil {
 					return err

@@ -3,11 +3,14 @@ package handler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+
+	"github.com/IBM/sarama"
 
 	"github.com/PoorMercymain/GopherEats/internal/app/subscription/domain"
 	subErrors "github.com/PoorMercymain/GopherEats/internal/app/subscription/errors"
@@ -19,15 +22,18 @@ import (
 var _ api.SubscriptionV1Server = (*subscription)(nil)
 
 type subscription struct {
-	srv         domain.SubscriptionService
-	client      auth.AuthV1Client
-	emailSender smtpSender
-	weekNumber  *int
+	srv                      domain.SubscriptionService
+	client                   auth.AuthV1Client
+	emailSender              smtpSender
+	weekNumber               *int
+	kafkaProducer            sarama.SyncProducer
+	notEnoughFundsEmailsChan chan string
 	api.UnimplementedSubscriptionV1Server
 }
 
-func New(srv domain.SubscriptionService, client auth.AuthV1Client, weekNumber *int, smtpUsername string, smtpPassword string, smtpServer string, smtpPort string) *subscription {
-	return &subscription{srv: srv, client: client, weekNumber: weekNumber, emailSender: smtpSender{username: smtpUsername, password: smtpPassword, server: smtpServer, port: smtpPort}}
+func New(srv domain.SubscriptionService, client auth.AuthV1Client, kafkaProducer sarama.SyncProducer, weekNumber *int, smtpUsername string, smtpPassword string, smtpServer string, smtpPort string) *subscription {
+	return &subscription{srv: srv, client: client, kafkaProducer: kafkaProducer, weekNumber: weekNumber,
+		emailSender: smtpSender{username: smtpUsername, password: smtpPassword, server: smtpServer, port: smtpPort}, notEnoughFundsEmailsChan: make(chan string, 1)}
 }
 
 func (h *subscription) CreateSubscriptionV1(ctx context.Context, r *api.CreateSubscriptionRequestV1) (*emptypb.Empty, error) {
@@ -129,9 +135,7 @@ func (h *subscription) SendEmail(ctx context.Context, to string, subject string,
 func (h *subscription) CountWeekAndCharge() {
 	currentTime := time.Now()
 
-	var ticker *time.Ticker
-
-	for currentTime.Weekday() != time.Thursday {
+	for currentTime.Weekday() != time.Friday {
 		<-time.After(24 * time.Hour)
 		currentTime = currentTime.Add(24 * time.Hour)
 		if currentTime.Weekday() == time.Thursday {
@@ -139,17 +143,48 @@ func (h *subscription) CountWeekAndCharge() {
 		}
 	}
 
-	ticker = time.NewTicker(7 * 24 * time.Hour)
+	ticker := time.NewTicker(7 * time.Second)
+
+	var email string
+
+	go func() {
+		for email = range h.notEnoughFundsEmailsChan {
+			logger.Logger().Infoln("got", email)
+			err := h.SendToKafka(context.Background(), "cancel-subscription", email)
+			if err != nil {
+				logger.Logger().Errorln("sending data to auth service failed:", err)
+			}
+		}
+	}()
+
 	for range ticker.C {
 		*h.weekNumber += 1
 		logger.Logger().Infoln("new week:", *h.weekNumber) // TODO: use func to charge for all subscriptions, send messages to kafka and send emails if not enough funds
-		err := h.srv.ChargeForSubscription(context.Background())
+		err := h.srv.ChargeForSubscription(context.Background(), h.notEnoughFundsEmailsChan)
+
 		if errors.Is(err, subErrors.ErrorNotEnoughFunds) {
-			logger.Logger().Errorln("not enough funds on balance", err)
+			logger.Logger().Errorln("not enough funds on balance and could not delete", err)
 		}
 
 		if !errors.Is(err, subErrors.ErrorNotEnoughFunds) && err != nil {
 			logger.Logger().Errorln(err)
 		}
 	}
+}
+
+func (h *subscription) SendToKafka(ctx context.Context, topic string, message string) error {
+	msg := &sarama.ProducerMessage{
+		Topic: topic,
+		Value: sarama.StringEncoder(message),
+	}
+
+	// Отправляем сообщение
+	partition, offset, err := h.kafkaProducer.SendMessage(msg)
+	if err != nil {
+		return fmt.Errorf("delivery failed: %v", err)
+	}
+
+	logger.Logger().Infoln("Delivered message to topic", topic, "[", partition, "] at offset", offset)
+
+	return nil
 }
