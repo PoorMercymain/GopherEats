@@ -46,8 +46,6 @@ const (
 	DishesServiceV1_AttachResourceToDishV1_FullMethodName   = "/api.dishes.v1.DishesServiceV1/AttachResourceToDishV1"
 	DishesServiceV1_DetachResourceFromDishV1_FullMethodName = "/api.dishes.v1.DishesServiceV1/DetachResourceFromDishV1"
 	DishesServiceV1_ListDishResourcesV1_FullMethodName      = "/api.dishes.v1.DishesServiceV1/ListDishResourcesV1"
-	DishesServiceV1_SendOrderV1_FullMethodName              = "/api.dishes.v1.DishesServiceV1/SendOrderV1"
-	DishesServiceV1_CancelOrderV1_FullMethodName            = "/api.dishes.v1.DishesServiceV1/CancelOrderV1"
 )
 
 // DishesServiceV1Client is the client API for DishesServiceV1 service.
@@ -80,8 +78,6 @@ type DishesServiceV1Client interface {
 	AttachResourceToDishV1(ctx context.Context, in *DishResourceRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DetachResourceFromDishV1(ctx context.Context, in *DishResourceRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ListDishResourcesV1(ctx context.Context, in *DishIdV1, opts ...grpc.CallOption) (DishesServiceV1_ListDishResourcesV1Client, error)
-	SendOrderV1(ctx context.Context, in *SendOrderRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	CancelOrderV1(ctx context.Context, in *CancelOrderRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type dishesServiceV1Client struct {
@@ -464,24 +460,6 @@ func (x *dishesServiceV1ListDishResourcesV1Client) Recv() (*ResourceResponseV1, 
 	return m, nil
 }
 
-func (c *dishesServiceV1Client) SendOrderV1(ctx context.Context, in *SendOrderRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, DishesServiceV1_SendOrderV1_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *dishesServiceV1Client) CancelOrderV1(ctx context.Context, in *CancelOrderRequestV1, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, DishesServiceV1_CancelOrderV1_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // DishesServiceV1Server is the server API for DishesServiceV1 service.
 // All implementations must embed UnimplementedDishesServiceV1Server
 // for forward compatibility
@@ -512,8 +490,6 @@ type DishesServiceV1Server interface {
 	AttachResourceToDishV1(context.Context, *DishResourceRequestV1) (*emptypb.Empty, error)
 	DetachResourceFromDishV1(context.Context, *DishResourceRequestV1) (*emptypb.Empty, error)
 	ListDishResourcesV1(*DishIdV1, DishesServiceV1_ListDishResourcesV1Server) error
-	SendOrderV1(context.Context, *SendOrderRequestV1) (*emptypb.Empty, error)
-	CancelOrderV1(context.Context, *CancelOrderRequestV1) (*emptypb.Empty, error)
 	mustEmbedUnimplementedDishesServiceV1Server()
 }
 
@@ -598,12 +574,6 @@ func (UnimplementedDishesServiceV1Server) DetachResourceFromDishV1(context.Conte
 }
 func (UnimplementedDishesServiceV1Server) ListDishResourcesV1(*DishIdV1, DishesServiceV1_ListDishResourcesV1Server) error {
 	return status.Errorf(codes.Unimplemented, "method ListDishResourcesV1 not implemented")
-}
-func (UnimplementedDishesServiceV1Server) SendOrderV1(context.Context, *SendOrderRequestV1) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendOrderV1 not implemented")
-}
-func (UnimplementedDishesServiceV1Server) CancelOrderV1(context.Context, *CancelOrderRequestV1) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CancelOrderV1 not implemented")
 }
 func (UnimplementedDishesServiceV1Server) mustEmbedUnimplementedDishesServiceV1Server() {}
 
@@ -1104,42 +1074,6 @@ func (x *dishesServiceV1ListDishResourcesV1Server) Send(m *ResourceResponseV1) e
 	return x.ServerStream.SendMsg(m)
 }
 
-func _DishesServiceV1_SendOrderV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SendOrderRequestV1)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DishesServiceV1Server).SendOrderV1(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: DishesServiceV1_SendOrderV1_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DishesServiceV1Server).SendOrderV1(ctx, req.(*SendOrderRequestV1))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _DishesServiceV1_CancelOrderV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CancelOrderRequestV1)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DishesServiceV1Server).CancelOrderV1(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: DishesServiceV1_CancelOrderV1_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DishesServiceV1Server).CancelOrderV1(ctx, req.(*CancelOrderRequestV1))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // DishesServiceV1_ServiceDesc is the grpc.ServiceDesc for DishesServiceV1 service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1226,14 +1160,6 @@ var DishesServiceV1_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DetachResourceFromDishV1",
 			Handler:    _DishesServiceV1_DetachResourceFromDishV1_Handler,
-		},
-		{
-			MethodName: "SendOrderV1",
-			Handler:    _DishesServiceV1_SendOrderV1_Handler,
-		},
-		{
-			MethodName: "CancelOrderV1",
-			Handler:    _DishesServiceV1_CancelOrderV1_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

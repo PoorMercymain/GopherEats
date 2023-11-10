@@ -1,7 +1,7 @@
 package domain
 
 type Order struct {
-	userId     uint64
-	bundleId   uint64
-	weekNumber uint64
+	UserId     uint64
+	BundleId   uint64
+	WeekNumber uint64
 }

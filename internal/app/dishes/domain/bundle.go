@@ -1,9 +1,15 @@
 package domain
 
 type Bundle struct {
-	id          uint64
-	name        string
-	description string
-	price       uint64
-	dishes      []*Dish
+	Id    uint64
+	Name  string
+	Price uint64
+}
+
+type WeeklyBundle struct {
+	Id         uint64
+	Name       string
+	Price      uint64
+	WeekNumber uint64
+	Dishes     []*Dish
 }

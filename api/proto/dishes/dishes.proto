@@ -28,8 +28,8 @@ service DishesServiceV1 {
   rpc DeleteBundleV1(BundleIdV1) returns (google.protobuf.Empty) {};
   rpc ListBundlesV1(google.protobuf.Empty) returns (stream BundleV1) {};
 
-  rpc AddBundleWeeklyDishV1(BundleWeeklyDishV1) returns (google.protobuf.Empty) {
-  };
+  rpc AddBundleWeeklyDishV1(BundleWeeklyDishV1)
+      returns (google.protobuf.Empty) {};
   rpc DeleteBundleWeeklyDishV1(BundleWeeklyDishV1)
       returns (google.protobuf.Empty) {};
   rpc GetBundleWeeklyDishesV1(GetBundleWeeklyDishesRequestV1)
@@ -49,9 +49,6 @@ service DishesServiceV1 {
   rpc DetachResourceFromDishV1(DishResourceRequestV1)
       returns (google.protobuf.Empty) {};
   rpc ListDishResourcesV1(DishIdV1) returns (stream ResourceResponseV1) {};
-
-  rpc SendOrderV1(SendOrderRequestV1) returns (google.protobuf.Empty) {};
-  rpc CancelOrderV1(CancelOrderRequestV1) returns (google.protobuf.Empty) {};
 }
 
 message IngredientV1 {
@@ -75,18 +72,25 @@ message IngredientIdV1 {
   uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
 }
 
+message DishIngredientV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+  string name = 2 [ (buf.validate.field).string.min_len = 1 ];
+  string unit = 3 [ (buf.validate.field).string.min_len = 1 ];
+  uint64 qty = 4 [ (buf.validate.field).ignore_empty = false ];
+}
+
 message DishV1 {
   uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
   string name = 2 [ (buf.validate.field).string.min_len = 1 ];
   string description = 3 [ (buf.validate.field).string.min_len = 1 ];
-  repeated IngredientV1 ingredients = 4
+  repeated DishIngredientV1 ingredients = 4
       [ (buf.validate.field).ignore_empty = true ];
 }
 
 message CreateDishRequestV1 {
-  string name = 2 [ (buf.validate.field).string.min_len = 1 ];
-  string description = 3 [ (buf.validate.field).string.min_len = 1 ];
-  repeated IngredientV1 ingredients = 4
+  string name = 1 [ (buf.validate.field).string.min_len = 1 ];
+  string description = 2 [ (buf.validate.field).string.min_len = 1 ];
+  repeated DishIngredientV1 ingredients = 3
       [ (buf.validate.field).ignore_empty = true ];
 }
 
@@ -94,7 +98,7 @@ message UpdateDishRequestV1 {
   uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
   string name = 2 [ (buf.validate.field).string.min_len = 1 ];
   string description = 3 [ (buf.validate.field).string.min_len = 1 ];
-  repeated IngredientV1 ingredients = 4
+  repeated DishIngredientV1 ingredients = 4
       [ (buf.validate.field).ignore_empty = true ];
 }
 
@@ -167,16 +171,4 @@ message ResourceResponseV1 {
 message DishResourceRequestV1 {
   uint64 dish_id = 1 [ (buf.validate.field).ignore_empty = false ];
   uint64 resource_id = 2 [ (buf.validate.field).ignore_empty = false ];
-}
-
-message SendOrderRequestV1 {
-  uint64 customer_id = 1 [ (buf.validate.field).ignore_empty = false ];
-  string address = 2 [ (buf.validate.field).string.min_len = 1 ];
-  uint64 bundle_id = 3 [ (buf.validate.field).ignore_empty = false ];
-  uint64 week_num = 4 [ (buf.validate.field).ignore_empty = false ];
-}
-
-message CancelOrderRequestV1 {
-  uint64 customer_id = 1 [ (buf.validate.field).ignore_empty = false ];
-  uint64 week_num = 2 [ (buf.validate.field).ignore_empty = false ];
 }

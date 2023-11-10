@@ -1,6 +1,6 @@
 package domain
 
 type Resource struct {
-	id       uint64
-	filename string
+	Id       uint64
+	Filename string
 }

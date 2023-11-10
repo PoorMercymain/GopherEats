@@ -16,6 +16,7 @@ import (
 	"github.com/PoorMercymain/GopherEats/internal/app/dishes/handler"
 	"github.com/PoorMercymain/GopherEats/internal/app/dishes/interceptor"
 	"github.com/PoorMercymain/GopherEats/internal/app/dishes/repository"
+	"github.com/PoorMercymain/GopherEats/internal/app/dishes/service"
 	"github.com/PoorMercymain/GopherEats/internal/pkg/logger"
 	pb "github.com/PoorMercymain/GopherEats/pkg/api/dishes"
 )
@@ -43,6 +44,7 @@ func main() {
 	}
 
 	repo, err := repository.NewDBStorage(serverConfig.DatabaseDSN)
+	service, err := service.NewDishesServiceWithRepository(repo)
 
 	ctx := context.Background()
 
@@ -59,7 +61,7 @@ func main() {
 
 	s := grpc.NewServer(grpc.ChainUnaryInterceptor(interceptor.ValidateRequestUnaryServerInterceptor(validator)))
 
-	pb.RegisterDishesServiceV1Server(s, handler.NewDishesServerV1WithStorage(repo))
+	pb.RegisterDishesServiceV1Server(s, handler.NewDishesServerV1WithService(service))
 
 	go listenAndServeGrpc(ctx, s, listen)
 

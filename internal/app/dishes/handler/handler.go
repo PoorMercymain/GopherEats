@@ -6,22 +6,24 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/PoorMercymain/GopherEats/internal/app/dishes/domain"
+	"github.com/PoorMercymain/GopherEats/internal/pkg/logger"
 	pb "github.com/PoorMercymain/GopherEats/pkg/api/dishes"
 )
 
 type DishesServerV1 struct {
 	pb.UnimplementedDishesServiceV1Server
-	storage domain.DishesRepository
+	service domain.DishesService
 }
 
-// NewDishesServerV1WithStorage returns DishesServerV1 for passed storage interface.
-func NewDishesServerV1WithStorage(storage domain.DishesRepository) *DishesServerV1 {
+// NewDishesServerV1WithService returns DishesServerV1 for passed service interface.
+func NewDishesServerV1WithService(service domain.DishesService) *DishesServerV1 {
 	return &DishesServerV1{
-		storage: storage,
+		service: service,
 	}
 }
 
 func (s *DishesServerV1) CreateIngredientV1(ctx context.Context, req *pb.CreateIngredientRequestV1) (*emptypb.Empty, error) {
+
 	return &emptypb.Empty{}, nil
 }
 
@@ -37,7 +39,15 @@ func (s *DishesServerV1) DeleteIngredientV1(ctx context.Context, req *pb.Ingredi
 	return &emptypb.Empty{}, nil
 }
 
-func (s *DishesServerV1) ListIngredientsV1(in *emptypb.Empty, stream pb.DishesServiceV1_ListIngredientsV1Server) error {
+func (s *DishesServerV1) ListIngredientsV1(in *emptypb.Empty, stream pb.DishesServiceV1_ListIngredientsV1Server) (err error) {
+	allIngredients, err := s.service.ListIngredients(stream.Context())
+	for _, i := range allIngredients {
+		err := stream.Send(i)
+		if err != nil {
+			logger.Logger().Infoln("Error sending message to stream: ", err)
+			return
+		}
+	}
 	return nil
 }
 
@@ -93,6 +103,7 @@ func (s *DishesServerV1) GetBundleWeeklyDishesV1(req *pb.GetBundleWeeklyDishesRe
 	return nil
 }
 
+/*
 func (s *DishesServerV1) SendOrderV1(ctx context.Context, req *pb.SendOrderRequestV1) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }
@@ -100,3 +111,4 @@ func (s *DishesServerV1) SendOrderV1(ctx context.Context, req *pb.SendOrderReque
 func (s *DishesServerV1) CancelOrderV1(ctx context.Context, req *pb.CancelOrderRequestV1) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }
+*/

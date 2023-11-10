@@ -1,7 +1,14 @@
 package domain
 
 type Ingredient struct {
-	id   uint64
-	name string
-	unit string
+	Id   uint64
+	Name string
+	Unit string
+}
+
+type DishIngredient struct {
+	Id   uint64
+	Name string
+	Unit string
+	Qty  uint64
 }
