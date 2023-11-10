@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/IBM/sarama"
 	"github.com/bufbuild/protovalidate-go"
 
 	"github.com/PoorMercymain/GopherEats/internal/app/subscription/handler"
@@ -25,13 +26,27 @@ func main() {
 	const (
 		certPath       = "cert/localhost.crt"
 		keyPath        = "cert/localhost.key"
-		postgresDSN    = "host=localhost dbname=gophereats user=gophereats password=gophereats port=5432 sslmode=disable"
+		postgresDSN    = "host=postgres dbname=gophereats user=gophereats password=gophereats port=5432 sslmode=disable"
 		baseDateString = "2023-11-02"
 		smtpServer     = ""
 		smtpPort       = ""
 		smtpUsername   = ""
 		smtpPassword   = ""
 	)
+
+	// Создаем конфигурацию для producer
+	producerConfig := sarama.NewConfig()
+	producerConfig.Producer.RequiredAcks = sarama.WaitForAll
+	producerConfig.Producer.Retry.Max = 5
+	producerConfig.Producer.Return.Successes = true
+
+	// Создаем producer
+	producer, err := sarama.NewSyncProducer([]string{"kafka:9092"}, producerConfig)
+	if err != nil {
+		logger.Logger().Errorln("Failed to create producer:", err)
+		return
+	}
+	defer producer.Close()
 
 	baseDate, err := time.Parse("2006-01-02", baseDateString)
 	if err != nil {
@@ -89,7 +104,7 @@ func main() {
 	subRep := repository.New(pgPool)
 	subSrv := service.New(subRep)
 
-	subscriptionServer := handler.New(subSrv, client, &weekNumber, smtpUsername, smtpPassword, smtpServer, smtpPort)
+	subscriptionServer := handler.New(subSrv, client, producer, &weekNumber, smtpUsername, smtpPassword, smtpServer, smtpPort)
 
 	subscriptionApi.RegisterSubscriptionV1Server(grpcServer, subscriptionServer)
 

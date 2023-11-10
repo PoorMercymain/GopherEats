@@ -7,6 +7,8 @@ services:
       - "27017:27017"
     volumes:
       - ./gophereats-mongo:/data/db
+    networks:
+      - kafka-network
   postgres:
     image: postgres:13.6
     container_name: gophereats-postgres
@@ -18,12 +20,34 @@ services:
       - ./gophereats-postgres:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - kafka-network
     command: [ "postgres", "-c", "log_statement=all" ]
+  auth:
+    ports:
+      - "8800:8800"
+    build:
+      context: ../
+      dockerfile: ./deployments/DockerfileAuth
+    networks:
+      - kafka-network
+    depends_on:
+      kafka:
+        condition: service_healthy
+  subscription:
+    ports:
+      - "8801:8801"
+    build:
+      context: ../
+      dockerfile: ./deployments/DockerfileSubscription
+    networks:
+      - kafka-network
+    depends_on:
+      kafka:
+        condition: service_healthy
+
   kafka:
     image: 'bitnami/kafka:latest'
-    ports:
-      - '9092:9092'
-      - '9094:9094'
     environment:
       - KAFKA_CFG_NODE_ID=0
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
@@ -33,3 +57,16 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CREATE_TOPICS=orders-for-dishes:1:1,cancel-subscription:1:1
+    networks:
+      - kafka-network
+    healthcheck:
+      test: kafka-topics.sh --bootstrap-server kafka:9092 --topic hc --create --if-not-exists && kafka-topics.sh --bootstrap-server kafka:9092 --topic hc --describe
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+networks:
+  kafka-network:
+    driver:
+      bridge

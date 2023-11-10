@@ -14,7 +14,7 @@ type SubscriptionService interface {
 	AddBalance(ctx context.Context, email string, balance uint64) error
 	ReadUserData(ctx context.Context, email string) (UserData, error)
 	ReadBalanceHistory(ctx context.Context, email string, page uint64) ([]*subscription.HistoryElementV1, error)
-	ChargeForSubscription(ctx context.Context) error
+	ChargeForSubscription(ctx context.Context, notEnoughFundsEmailsChan chan<- string) error
 }
 
 type SubscriptionRepository interface {
@@ -25,6 +25,6 @@ type SubscriptionRepository interface {
 	AddBalance(ctx context.Context, email string, balance uint64) error
 	ReadUserData(ctx context.Context, email string) (UserData, error)
 	ReadBalanceHistory(ctx context.Context, email string, page uint64) ([]*subscription.HistoryElementV1, error)
-	ChargeForSubscription(ctx context.Context) error
+	ChargeForSubscription(ctx context.Context, notEnoughFundsEmailsChan chan<- string) error
 	RemoveAmountFromBalance(ctx context.Context, email string, amount uint64) error
 }

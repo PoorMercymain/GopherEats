@@ -11,6 +11,8 @@ import (
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/errors"
 )
 
+var _ domain.AuthService = (*auth)(nil)
+
 type auth struct {
 	repo domain.AuthRepository
 }
@@ -109,4 +111,8 @@ func (s *auth) CheckIfUserIsAdmin(ctx context.Context, email string) (bool, erro
 
 func (s *auth) GetAddress(ctx context.Context, email string) (string, error) {
 	return s.repo.GetAddress(ctx, email)
+}
+
+func (s *auth) UpdateWarning(ctx context.Context, email string, warning string) error {
+	return s.repo.UpdateWarning(ctx, email, warning)
 }

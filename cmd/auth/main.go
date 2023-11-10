@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/IBM/sarama"
 	"github.com/bufbuild/protovalidate-go"
 
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/handler"
@@ -27,10 +28,23 @@ func main() {
 	const (
 		certPath      = "cert/localhost.crt"
 		keyPath       = "cert/localhost.key"
-		mongoURI      = "mongodb://localhost:27017"
+		mongoURI      = "mongodb://mongodb:27017"
 		trustedSubnet = ""
 		jwtSecretKey  = "somesecretkey"
 	)
+
+	// Создаем конфигурацию для consumer
+	consumerConfig := sarama.NewConfig()
+	consumerConfig.Consumer.Offsets.Initial = sarama.OffsetNewest
+
+	// Создаем consumer
+	consumer, err := sarama.NewConsumer([]string{"kafka:9092"}, consumerConfig)
+	if err != nil {
+		logger.Logger().Errorln("Failed to create consumer:", err)
+		return
+	}
+	defer consumer.Close()
+
 	creds, err := credentials.NewServerTLSFromFile(certPath, keyPath)
 	if err != nil {
 		logger.Logger().Fatalln("Failed to setup tls:", err)
@@ -71,7 +85,7 @@ func main() {
 	ar := repository.New(collection)
 	as := service.New(ar)
 
-	authServer := handler.New(as, jwtSecretKey)
+	authServer := handler.New(as, consumer, jwtSecretKey)
 
 	api.RegisterAuthV1Server(grpcServer, authServer)
 
@@ -94,6 +108,13 @@ func main() {
 		if err != nil {
 			logger.Logger().Errorln(err)
 			ret <- struct{}{}
+		}
+	}()
+
+	go func() {
+		err := authServer.SetWarnings(context.Background())
+		if err != nil {
+			logger.Logger().Errorln(err)
 		}
 	}()
 

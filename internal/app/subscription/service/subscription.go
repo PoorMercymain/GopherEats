@@ -45,6 +45,6 @@ func (s *subscription) ReadBalanceHistory(ctx context.Context, email string, pag
 	return s.repo.ReadBalanceHistory(ctx, email, page)
 }
 
-func (s *subscription) ChargeForSubscription(ctx context.Context) error { // TODO: use it every thursday
-	return s.repo.ChargeForSubscription(ctx)
+func (s *subscription) ChargeForSubscription(ctx context.Context, notEnoughFundsEmailsChan chan<- string) error { // TODO: use it every thursday
+	return s.repo.ChargeForSubscription(ctx, notEnoughFundsEmailsChan)
 }

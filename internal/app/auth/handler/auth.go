@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strconv"
 
+	"github.com/IBM/sarama"
 	"github.com/pquerna/otp/totp"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -15,17 +16,20 @@ import (
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/email"
 	authErrors "github.com/PoorMercymain/GopherEats/internal/app/auth/errors"
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/token"
+	"github.com/PoorMercymain/GopherEats/internal/pkg/logger"
 	api "github.com/PoorMercymain/GopherEats/pkg/api/auth"
 )
 
 type auth struct {
-	jwtSecretKey string
-	srv          domain.AuthService
+	jwtSecretKey     string
+	srv              domain.AuthService
+	kafkaConsumer    sarama.Consumer
+	msgFromKafkaChan chan string
 	api.UnimplementedAuthV1Server
 }
 
-func New(srv domain.AuthService, jwtSecretKey string) *auth {
-	return &auth{srv: srv, jwtSecretKey: jwtSecretKey}
+func New(srv domain.AuthService, kafkaConsumer sarama.Consumer, jwtSecretKey string) *auth {
+	return &auth{srv: srv, kafkaConsumer: kafkaConsumer, jwtSecretKey: jwtSecretKey, msgFromKafkaChan: make(chan string, 1)}
 }
 
 func (h *auth) RegisterV1(ctx context.Context, r *api.RegisterRequestV1) (*api.RegisterResponseV1, error) {
@@ -303,4 +307,46 @@ func (h *auth) GetAddressV1(ctx context.Context, r *api.GetAddressRequestV1) (*a
 	}
 
 	return &api.GetAddressResponseV1{Address: address}, nil
+}
+
+func (h *auth) ReadFromKafka(ctx context.Context, topics []string) error {
+	// Подписываемся на топики
+	partitionConsumer, err := h.kafkaConsumer.ConsumePartition(topics[0], 0, sarama.OffsetNewest)
+	if err != nil {
+		logger.Logger().Errorln("Error consuming partition:", err)
+		return err
+	}
+
+	// Ждем сообщения от partitionConsumer
+	go func() {
+		defer partitionConsumer.Close()
+		logger.Logger().Infoln("waiting for messages from kafka")
+		for msg := range partitionConsumer.Messages() {
+			logger.Logger().Infoln("Received message:", string(msg.Value))
+
+			h.msgFromKafkaChan <- string(msg.Value)
+		}
+	}()
+
+	return nil
+}
+
+func (h *auth) SetWarnings(ctx context.Context) error {
+	err := h.ReadFromKafka(ctx, []string{"cancel-subscription"})
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		for msg := range h.msgFromKafkaChan {
+			logger.Logger().Infoln("got", msg)
+
+			err := h.srv.UpdateWarning(ctx, msg, "WARNING: not enough balance to pay for subscription!")
+			if err != nil {
+				logger.Logger().Errorln("Error updating warning:", err)
+			}
+		}
+	}()
+
+	return nil
 }

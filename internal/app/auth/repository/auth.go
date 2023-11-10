@@ -6,7 +6,11 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/PoorMercymain/GopherEats/internal/app/auth/domain"
 )
+
+var _ domain.AuthRepository = (*auth)(nil)
 
 type auth struct {
 	mongo *mCollection
@@ -17,7 +21,7 @@ func New(mongoCollection *mongo.Collection) *auth {
 }
 
 func (r *auth) SaveUserData(ctx context.Context, email string, passwordHash string, address string, secretKey string, isAdmin bool) error {
-	return r.mongo.InsertOne(ctx, bson.M{"email": email, "passwordHash": passwordHash, "address": address, "isAdmin": isAdmin, "secretKey": secretKey})
+	return r.mongo.InsertOne(ctx, bson.M{"email": email, "passwordHash": passwordHash, "address": address, "isAdmin": isAdmin, "secretKey": secretKey, "warning": ""})
 }
 
 func (r *auth) GetPasswordHash(ctx context.Context, email string) (string, error) {
@@ -103,4 +107,10 @@ func (r *auth) GetAddress(ctx context.Context, email string) (string, error) {
 	}
 
 	return address.Address, nil
+}
+
+func (r *auth) UpdateWarning(ctx context.Context, email string, warning string) error {
+	_, err := r.mongo.UpdateOne(ctx, bson.M{"email": email}, bson.M{"$set": bson.M{"warning": warning}})
+
+	return err
 }
