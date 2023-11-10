@@ -105,7 +105,12 @@ func (h *auth) LoginV1(ctx context.Context, r *api.LoginRequestV1) (*api.LoginRe
 		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
 	}
 
-	return &api.LoginResponseV1{Token: jwt}, nil
+	warning, err := h.srv.GetWarning(ctx, r.Email)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+	}
+
+	return &api.LoginResponseV1{Token: jwt, Warning: warning}, nil
 }
 
 func (h *auth) ChangePasswordV1(ctx context.Context, r *api.ChangePasswordRequestV1) (*emptypb.Empty, error) {
@@ -162,7 +167,12 @@ func (h *auth) LoginWithOTPV1(ctx context.Context, r *api.LoginWithOTPRequestV1)
 		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
 	}
 
-	return &api.LoginResponseV1{Token: jwt}, nil
+	warning, err := h.srv.GetWarning(ctx, r.Email)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "something went wrong on server side in auth service: %v", err)
+	}
+
+	return &api.LoginResponseV1{Token: jwt, Warning: warning}, nil
 }
 
 func (h *auth) ChangeAddressV1(ctx context.Context, r *api.ChangeAddressRequestV1) (*emptypb.Empty, error) {

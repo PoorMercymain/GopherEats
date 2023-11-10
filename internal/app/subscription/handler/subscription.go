@@ -135,7 +135,7 @@ func (h *subscription) SendEmail(ctx context.Context, to string, subject string,
 func (h *subscription) CountWeekAndCharge() {
 	currentTime := time.Now()
 
-	for currentTime.Weekday() != time.Friday {
+	for currentTime.Weekday() != time.Thursday {
 		<-time.After(24 * time.Hour)
 		currentTime = currentTime.Add(24 * time.Hour)
 		if currentTime.Weekday() == time.Thursday {
@@ -143,7 +143,7 @@ func (h *subscription) CountWeekAndCharge() {
 		}
 	}
 
-	ticker := time.NewTicker(7 * time.Second)
+	ticker := time.NewTicker(7 * 24 * time.Hour)
 
 	var email string
 

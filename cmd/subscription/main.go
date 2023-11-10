@@ -72,7 +72,7 @@ func main() {
 		return
 	}
 
-	conn, err := grpc.Dial("localhost:8800", grpc.WithTransportCredentials(creds))
+	conn, err := grpc.Dial("auth:8800", grpc.WithTransportCredentials(creds))
 	if err != nil {
 		logger.Logger().Errorln("Failed to connect:", err)
 		return
@@ -116,7 +116,7 @@ func main() {
 		ret <- struct{}{}
 	}()
 
-	listenerGRPC, err := net.Listen("tcp", "localhost:8801")
+	listenerGRPC, err := net.Listen("tcp", "0.0.0.0:8801")
 	if err != nil {
 		logger.Logger().Infoln("failed to listen:", err)
 		return

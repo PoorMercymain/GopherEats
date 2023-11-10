@@ -114,3 +114,21 @@ func (r *auth) UpdateWarning(ctx context.Context, email string, warning string) 
 
 	return err
 }
+
+func (r *auth) GetWarning(ctx context.Context, email string) (string, error) {
+	user, err := r.mongo.FindOne(ctx, bson.M{"email": email})
+	if err != nil {
+		return "", err
+	}
+
+	var warning struct {
+		Warning string `bson:"warning"`
+	}
+
+	err = user.Decode(&warning)
+	if err != nil {
+		return "", err
+	}
+
+	return warning.Warning, nil
+}

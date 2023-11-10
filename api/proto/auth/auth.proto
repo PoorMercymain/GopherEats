@@ -45,6 +45,7 @@ message LoginRequestV1 {
 
 message LoginResponseV1 {
     string token = 1 [(buf.validate.field).string.min_len = 3];
+    string warning = 2 [(buf.validate.field).string.min_len = 0];
 }
 
 message ChangePasswordRequestV1 {

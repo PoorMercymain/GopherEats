@@ -116,3 +116,7 @@ func (s *auth) GetAddress(ctx context.Context, email string) (string, error) {
 func (s *auth) UpdateWarning(ctx context.Context, email string, warning string) error {
 	return s.repo.UpdateWarning(ctx, email, warning)
 }
+
+func (s *auth) GetWarning(ctx context.Context, email string) (string, error) {
+	return s.repo.GetWarning(ctx, email)
+}

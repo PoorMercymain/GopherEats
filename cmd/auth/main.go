@@ -97,7 +97,7 @@ func main() {
 		ret <- struct{}{}
 	}()
 
-	listenerGRPC, err := net.Listen("tcp", "localhost:8800")
+	listenerGRPC, err := net.Listen("tcp", "0.0.0.0:8800")
 	if err != nil {
 		logger.Logger().Infoln("failed to listen:", err)
 		return

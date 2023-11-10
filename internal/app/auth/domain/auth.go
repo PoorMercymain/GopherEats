@@ -12,6 +12,7 @@ type AuthService interface {
 	CheckIfUserIsAdmin(ctx context.Context, email string) (bool, error)
 	GetAddress(ctx context.Context, email string) (string, error)
 	UpdateWarning(ctx context.Context, email string, warning string) error
+	GetWarning(ctx context.Context, email string) (string, error)
 }
 
 type AuthRepository interface {
@@ -23,4 +24,5 @@ type AuthRepository interface {
 	GetIsAdmin(ctx context.Context, email string) (bool, error)
 	GetAddress(ctx context.Context, email string) (string, error)
 	UpdateWarning(ctx context.Context, email string, warning string) error
+	GetWarning(ctx context.Context, email string) (string, error)
 }
