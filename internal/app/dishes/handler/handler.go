@@ -24,20 +24,23 @@ func NewDishesServerV1WithService(service domain.DishesService) *DishesServerV1 
 }
 
 func (s *DishesServerV1) CreateIngredientV1(ctx context.Context, req *pb.CreateIngredientRequestV1) (*emptypb.Empty, error) {
-
-	return &emptypb.Empty{}, nil
+	err := s.service.StoreIngredient(ctx, req)
+	return &emptypb.Empty{}, err
 }
 
 func (s *DishesServerV1) UpdateIngredientV1(ctx context.Context, req *pb.UpdateIngredientRequestV1) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, nil
+	err := s.service.UpdateIngredient(ctx, req)
+	return &emptypb.Empty{}, err
 }
 
-func (s *DishesServerV1) GetIngredientV1(ctx context.Context, req *pb.IngredientIdV1) (*pb.IngredientV1, error) {
-	return nil, nil
+func (s *DishesServerV1) GetIngredientV1(ctx context.Context, req *pb.IngredientIdV1) (resp *pb.IngredientV1, err error) {
+	resp, err = s.service.GetIngredient(ctx, req.GetId())
+	return
 }
 
 func (s *DishesServerV1) DeleteIngredientV1(ctx context.Context, req *pb.IngredientIdV1) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, nil
+	err := s.service.DeleteIngredient(ctx, req.GetId())
+	return &emptypb.Empty{}, err
 }
 
 func (s *DishesServerV1) ListIngredientsV1(in *emptypb.Empty, stream pb.DishesServiceV1_ListIngredientsV1Server) (err error) {
