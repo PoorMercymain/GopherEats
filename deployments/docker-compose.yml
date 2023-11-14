@@ -45,6 +45,17 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+  dishes:
+    ports:
+      - "8802:8802"
+    build:
+      context: ../
+      dockerfile: ./deployments/DockerfileDishes
+    networks:
+      - kafka-network
+    depends_on:
+      kafka:
+        condition: service_healthy
 
   kafka:
     image: 'bitnami/kafka:latest'

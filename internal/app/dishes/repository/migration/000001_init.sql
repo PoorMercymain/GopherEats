@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS dishes
 (
     id         SERIAL PRIMARY KEY,
     name       VARCHAR(100) UNIQUE,
-    descr       VARCHAR(200),
+    description       VARCHAR(200),
     created_at TIMESTAMP,
     updated_at TIMESTAMP
 );
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS bundles
 (
     id         SERIAL PRIMARY KEY,
     name       VARCHAR(200) UNIQUE,
-    descr       VARCHAR(200),
+    description       VARCHAR(200),
     created_at TIMESTAMP,
     updated_at TIMESTAMP
 );

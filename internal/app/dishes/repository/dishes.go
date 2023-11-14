@@ -3,15 +3,18 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
-	_ "github.com/jackc/pgx/v5"
-	_ "github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 
 	"github.com/PoorMercymain/GopherEats/internal/app/dishes/domain"
+	subErrors "github.com/PoorMercymain/GopherEats/internal/app/dishes/errors"
 	"github.com/PoorMercymain/GopherEats/internal/pkg/logger"
 )
 
@@ -79,17 +82,117 @@ func NewDBStorage(DSN string) (storage domain.DishesRepository, err error) {
 	return
 }
 
-func (dbs *dbStorage) StoreIngredient(ctx context.Context, ingredient *domain.Ingredient) (err error) {
-	return
+func (dbs *dbStorage) WithTransaction(ctx context.Context, txFunc func(context.Context, pgx.Tx) error) (err error) {
+	conn, err := dbs.pgxPool.Acquire(ctx)
+	if err != nil {
+		return
+	}
+	defer conn.Release()
+
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return
+	}
+	defer func() {
+		err = tx.Rollback(ctx)
+		if !errors.Is(err, pgx.ErrTxClosed) && err != nil {
+			logger.Logger().Errorln(err)
+		}
+	}()
+
+	err = txFunc(ctx, tx)
+	if err != nil {
+		return
+	}
+
+	return tx.Commit(ctx)
 }
+
+func (dbs *dbStorage) WithConnection(ctx context.Context, connFunc func(context.Context, *pgxpool.Conn) error) (err error) {
+	conn, err := dbs.pgxPool.Acquire(ctx)
+	if err != nil {
+		return
+	}
+	defer conn.Release()
+
+	return connFunc(ctx, conn)
+}
+
+func (dbs *dbStorage) StoreIngredient(ctx context.Context, ingredient *domain.Ingredient) (err error) {
+	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
+		_, err = tx.Exec(ctx, "INSERT INTO ingredients VALUES(DEFAULT, $1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+			ingredient.Name, ingredient.Unit)
+		if err != nil {
+			var pgErr *pgconn.PgError
+
+			if errors.As(err, &pgErr) {
+				if pgErr.Code == pgerrcode.UniqueViolation {
+					return subErrors.ErrorUniqueViolationWhileStoring
+				}
+			}
+
+			return
+		}
+
+		return
+	})
+}
+
+/*
+id         SERIAL PRIMARY KEY,
+name       VARCHAR(100) UNIQUE,
+unit       VARCHAR(20),
+created_at TIMESTAMP,
+updated_at TIMESTAMP
+*/
 func (dbs *dbStorage) UpdateIngredient(ctx context.Context, ingredient *domain.Ingredient) (err error) {
-	return
+	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
+
+		commandTag, err := tx.Exec(ctx, "UPDATE ingredients SET name = $1, unit = $2, "+
+			"updated_at = CURRENT_TIMESTAMP WHERE id = $3", ingredient.Name, ingredient.Unit, ingredient.Id)
+		if err != nil {
+			return
+		}
+
+		if commandTag.RowsAffected() == 0 {
+			return subErrors.ErrorNoRowsUpdated
+		}
+
+		return
+	})
 }
 func (dbs *dbStorage) GetIngredient(ctx context.Context, id uint64) (ingredient *domain.Ingredient, err error) {
+
+	ingredient = &domain.Ingredient{Id: id}
+
+	err = dbs.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) (err error) {
+		err = conn.QueryRow(ctx, "SELECT name, unit FROM ingredients WHERE id = $1 LIMIT 1", id).
+			Scan(&ingredient.Name, &ingredient.Name)
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			return subErrors.ErrorNoRowsWhileGetting
+		}
+
+		return
+	})
+
 	return
 }
+
 func (dbs *dbStorage) DeleteIngredient(ctx context.Context, id uint64) (err error) {
-	return
+	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
+
+		commandTag, err := tx.Exec(ctx, "DELETE FROM ingredients WHERE id = $1", id)
+		if err != nil {
+			return
+		}
+
+		if commandTag.RowsAffected() == 0 {
+			return subErrors.ErrorNoRowsUpdated
+		}
+
+		return
+	})
 }
 func (dbs *dbStorage) ListIngredients(ctx context.Context) (ingredients []*domain.Ingredient, err error) {
 	return
