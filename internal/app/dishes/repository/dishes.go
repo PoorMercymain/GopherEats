@@ -263,16 +263,32 @@ func (dbs *dbStorage) UpdateDish(ctx context.Context, dish *domain.Dish) (err er
 		return
 	})
 }
+
 func (dbs *dbStorage) GetDish(ctx context.Context, id uint64) (dish *domain.Dish, err error) {
-	//TODO: process DishIngredients
 	dish = &domain.Dish{Id: id}
 
 	err = dbs.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) (err error) {
-		err = conn.QueryRow(ctx, "SELECT name, description FROM dishes WHERE id = $1 LIMIT 1", id).
-			Scan(&dish.Name, &dish.Description)
+		var totalRows int
+		err = conn.QueryRow(ctx, "SELECT count(*) FROM dishes_ingredients WHERE dish_id = $1", id).
+			Scan(&totalRows)
 
-		if errors.Is(err, pgx.ErrNoRows) {
-			return subErrors.ErrorNoRowsWhileGetting
+		rows, err := conn.Query(ctx, "SELECT dishes.name, dishes.description, dishes_ingredients.qty, "+
+			"ingredients.id, ingredients.name, ingredients.unit "+
+			"FROM dishes WHERE dishes.id = $1 "+
+			"LEFT OUTER JOIN dishes_ingredients ON dishes.ingredients.dish_id = dishes.id "+
+			"JOIN ingredients ON ingredients.id = dishes_ingredients.ingredient_id", id)
+
+		dish.Ingredients = make([]*domain.DishIngredient, totalRows)
+
+		counter := 0
+		for rows.Next() {
+			i := &domain.DishIngredient{}
+			err = rows.Scan(&dish.Name, &dish.Description, &i.Qty, &i.Id, &i.Name, &i.Unit)
+			if err != nil {
+				return subErrors.ErrorWhileScanning
+			}
+			dish.Ingredients[counter] = i
+			counter++
 		}
 
 		return
