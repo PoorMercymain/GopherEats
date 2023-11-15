@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS bundles
 (
     id         SERIAL PRIMARY KEY,
     name       VARCHAR(200) UNIQUE,
-    description       VARCHAR(200),
+    price   INT,
     created_at TIMESTAMP,
     updated_at TIMESTAMP
 );
