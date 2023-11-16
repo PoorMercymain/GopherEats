@@ -225,7 +225,6 @@ func (dbs *dbStorage) ListIngredients(ctx context.Context) (ingredients []*domai
 }
 
 func (dbs *dbStorage) StoreDish(ctx context.Context, dish *domain.Dish) (err error) {
-	//TODO: process DishIngredients
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 		var id int
 		err = tx.QueryRow(ctx, "INSERT INTO dishes VALUES(DEFAULT, $1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) "+
@@ -243,15 +242,47 @@ func (dbs *dbStorage) StoreDish(ctx context.Context, dish *domain.Dish) (err err
 			return
 		}
 
+		if dish.Ingredients == nil || len(dish.Ingredients) == 0 {
+			return
+		}
+
+		//save new ingredients info
+
+		///batch
+		batch := &pgx.Batch{}
+
+		for _, value := range dish.Ingredients {
+			batch.Queue("INSERT INTO dishes_ingredients (id, dish_id, ingredient_id, qty) VALUES(DEFAULT, $1, $2, $3)",
+				dish.Id, value.Id, value.Qty)
+		}
+
+		br := tx.SendBatch(ctx, batch)
+		defer br.Close()
+
+		for range dish.Ingredients {
+			_, err = br.Exec()
+			if err != nil {
+				logger.Logger().Errorln(err)
+				return
+			}
+		}
+
+		err = br.Close()
+		if err != nil {
+			logger.Logger().Errorln(err)
+			return
+		}
+		//end batch
+
 		return
 	})
 }
 func (dbs *dbStorage) UpdateDish(ctx context.Context, dish *domain.Dish) (err error) {
-
-	//TODO: process DishIngredients
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 
-		commandTag, err := tx.Exec(ctx, "UPDATE dishes SET name = $1, description = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3", dish.Name, dish.Description, dish.Id)
+		commandTag, err := tx.Exec(ctx, "UPDATE dishes SET name = $1, description = $2, "+
+			"updated_at = CURRENT_TIMESTAMP WHERE id = $3",
+			dish.Name, dish.Description, dish.Id)
 		if err != nil {
 			return
 		}
@@ -259,6 +290,49 @@ func (dbs *dbStorage) UpdateDish(ctx context.Context, dish *domain.Dish) (err er
 		if commandTag.RowsAffected() == 0 {
 			return subErrors.ErrorNoRowsUpdated
 		}
+
+		//in case we don't want to update ingredients info just pass nil
+		if dish.Ingredients == nil {
+			return
+		}
+
+		//delete old ingredients info
+		_, err = tx.Exec(ctx, "DELETE FROM dishes_ingredients WHERE dish_id = $1", dish.Id)
+		if err != nil {
+			logger.Logger().Errorln(err)
+		}
+
+		if len(dish.Ingredients) == 0 {
+			return
+		}
+
+		//save new ingredients info
+
+		///batch
+		batch := &pgx.Batch{}
+
+		for _, value := range dish.Ingredients {
+			batch.Queue("INSERT INTO dishes_ingredients (id, dish_id, ingredient_id, qty) VALUES(DEFAULT, $1, $2, $3)",
+				dish.Id, value.Id, value.Qty)
+		}
+
+		br := tx.SendBatch(ctx, batch)
+		defer br.Close()
+
+		for range dish.Ingredients {
+			_, err = br.Exec()
+			if err != nil {
+				logger.Logger().Errorln(err)
+				return
+			}
+		}
+
+		err = br.Close()
+		if err != nil {
+			logger.Logger().Errorln(err)
+			return
+		}
+		//end batch
 
 		return
 	})
@@ -273,10 +347,10 @@ func (dbs *dbStorage) GetDish(ctx context.Context, id uint64) (dish *domain.Dish
 			Scan(&totalRows)
 
 		rows, err := conn.Query(ctx, "SELECT dishes.name, dishes.description, dishes_ingredients.qty, "+
-			"ingredients.id, ingredients.name, ingredients.unit "+
-			"FROM dishes WHERE dishes.id = $1 "+
+			"ingredients.id, ingredients.name, ingredients.unit FROM dishes "+
 			"LEFT OUTER JOIN dishes_ingredients ON dishes.ingredients.dish_id = dishes.id "+
-			"JOIN ingredients ON ingredients.id = dishes_ingredients.ingredient_id", id)
+			"JOIN ingredients ON ingredients.id = dishes_ingredients.ingredient_id "+
+			"WHERE dishes.id = $1 ", id)
 
 		dish.Ingredients = make([]*domain.DishIngredient, totalRows)
 
@@ -297,12 +371,16 @@ func (dbs *dbStorage) GetDish(ctx context.Context, id uint64) (dish *domain.Dish
 	return
 }
 func (dbs *dbStorage) DeleteDish(ctx context.Context, id uint64) (err error) {
-	//TODO: process DishIngredients
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
+
+		commandTagIng, err := tx.Exec(ctx, "DELETE FROM dishes_ingredients WHERE dish_id = $1", id)
+		if err != nil {
+			logger.Logger().Errorln(err)
+		}
 
 		commandTag, err := tx.Exec(ctx, "DELETE FROM dishes WHERE id = $1", id)
 
-		if commandTag.RowsAffected() == 0 {
+		if commandTag.RowsAffected() == 0 && commandTagIng.RowsAffected() == 0 {
 			return subErrors.ErrorNoRowsUpdated
 		}
 
@@ -330,12 +408,12 @@ func (dbs *dbStorage) ListDishes(ctx context.Context) (dishes []*domain.Dish, er
 		dishes = make([]*domain.Dish, totalRows)
 		counter := 0
 		for rows.Next() {
-			i := &domain.Dish{}
-			err = rows.Scan(&i.Id, &i.Name, &i.Description)
+			d := &domain.Dish{}
+			err = rows.Scan(&d.Id, &d.Name, &d.Description)
 			if err != nil {
 				return subErrors.ErrorWhileScanning
 			}
-			dishes[counter] = i
+			dishes[counter] = d
 			counter++
 		}
 
@@ -476,7 +554,6 @@ func (dbs *dbStorage) GetBundleWeeklyDishes(ctx context.Context, weekNumber, bun
 			return subErrors.ErrorNoRowsWhileListing
 		}
 
-		//TODO: JOIN to get full info from dishes and dishes_ingredients table
 		rows, err := conn.Query(ctx, "SELECT dish_id FROM bundles_dishes WHERE week_number = $1 AND bundle_id = $2",
 			weekNumber, bundleId)
 
@@ -487,12 +564,18 @@ func (dbs *dbStorage) GetBundleWeeklyDishes(ctx context.Context, weekNumber, bun
 		dishes = make([]*domain.Dish, totalRows)
 		counter := 0
 		for rows.Next() {
-			d := &domain.Dish{}
-			err = rows.Scan(&d.Id)
+			var dishId uint64
+			err = rows.Scan(&dishId)
 			if err != nil {
 				return subErrors.ErrorWhileScanning
 			}
-			dishes[counter] = d
+
+			//not sure if it's the most optimised way to get the info, but join over 5 tables looks questionable either
+			currDish, getErr := dbs.GetDish(ctx, dishId)
+			if getErr != nil {
+				return getErr
+			}
+			dishes[counter] = currDish
 			counter++
 		}
 
