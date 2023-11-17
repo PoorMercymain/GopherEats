@@ -31,7 +31,7 @@ func (d *dishesService) StoreIngredient(ctx context.Context, req *pb.CreateIngre
 
 func (d *dishesService) UpdateIngredient(ctx context.Context, req *pb.UpdateIngredientRequestV1) (err error) {
 	i := &domain.Ingredient{
-		Id:   req.GetId(),
+		ID:   req.GetId(),
 		Name: req.GetName(),
 		Unit: req.GetUnit(),
 	}
@@ -47,7 +47,7 @@ func (d *dishesService) GetIngredient(ctx context.Context, id uint64) (resp *pb.
 		return nil, fmt.Errorf("failed to get ingredient %d: %w", id, err)
 	}
 	resp = &pb.IngredientV1{
-		Id:   i.Id,
+		Id:   i.ID,
 		Name: i.Name,
 		Unit: i.Unit,
 	}
@@ -68,7 +68,7 @@ func (d *dishesService) ListIngredients(ctx context.Context) (resp []*pb.Ingredi
 	resp = make([]*pb.IngredientV1, len(ingredients))
 	for index, i := range ingredients {
 		resp[index] = &pb.IngredientV1{
-			Id:   i.Id,
+			Id:   i.ID,
 			Name: i.Name,
 			Unit: i.Unit,
 		}
@@ -86,7 +86,7 @@ func (d *dishesService) StoreDish(ctx context.Context, req *pb.CreateDishRequest
 
 	for index, i := range req.Ingredients {
 		currDish.Ingredients[index] = &domain.DishIngredient{
-			Id:   i.GetId(),
+			ID:   i.GetId(),
 			Name: i.GetName(),
 			Unit: i.GetName(),
 			Qty:  i.GetQty(),
@@ -99,7 +99,7 @@ func (d *dishesService) StoreDish(ctx context.Context, req *pb.CreateDishRequest
 
 func (d *dishesService) UpdateDish(ctx context.Context, req *pb.UpdateDishRequestV1) (err error) {
 	currDish := &domain.Dish{
-		Id:          req.GetId(),
+		ID:          req.GetId(),
 		Name:        req.GetName(),
 		Description: req.GetDescription(),
 	}
@@ -108,7 +108,7 @@ func (d *dishesService) UpdateDish(ctx context.Context, req *pb.UpdateDishReques
 
 	for index, i := range req.Ingredients {
 		currDish.Ingredients[index] = &domain.DishIngredient{
-			Id:   i.GetId(),
+			ID:   i.GetId(),
 			Name: i.GetName(),
 			Unit: i.GetName(),
 			Qty:  i.GetQty(),
@@ -126,7 +126,7 @@ func (d *dishesService) GetDish(ctx context.Context, id uint64) (resp *pb.DishV1
 		return nil, fmt.Errorf("failed to get dish %d: %w", id, err)
 	}
 	resp = &pb.DishV1{
-		Id:          currDish.Id,
+		Id:          currDish.ID,
 		Name:        currDish.Name,
 		Description: currDish.Description,
 	}
@@ -135,7 +135,7 @@ func (d *dishesService) GetDish(ctx context.Context, id uint64) (resp *pb.DishV1
 
 	for index, i := range currDish.Ingredients {
 		resp.Ingredients[index] = &pb.DishIngredientV1{
-			Id:   i.Id,
+			Id:   i.ID,
 			Name: i.Name,
 			Unit: i.Unit,
 			Qty:  i.Qty,
@@ -160,14 +160,14 @@ func (d *dishesService) ListDishes(ctx context.Context) (resp []*pb.DishV1, err 
 
 	for dishIndex, dish := range dishes {
 		resp[dishIndex] = &pb.DishV1{
-			Id:          dish.Id,
+			Id:          dish.ID,
 			Name:        dish.Name,
 			Description: dish.Description,
 		}
 		resp[dishIndex].Ingredients = make([]*pb.DishIngredientV1, len(dish.Ingredients))
 		for index, i := range dish.Ingredients {
 			resp[dishIndex].Ingredients[index] = &pb.DishIngredientV1{
-				Id:   i.Id,
+				Id:   i.ID,
 				Name: i.Name,
 				Unit: i.Unit,
 				Qty:  i.Qty,
@@ -189,7 +189,7 @@ func (d *dishesService) StoreBundle(ctx context.Context, req *pb.CreateBundleReq
 
 func (d *dishesService) UpdateBundle(ctx context.Context, req *pb.UpdateBundleRequestV1) (err error) {
 	bundle := &domain.Bundle{
-		Id:    req.GetId(),
+		ID:    req.GetId(),
 		Name:  req.GetName(),
 		Price: req.GetPrice(),
 	}
@@ -205,7 +205,7 @@ func (d *dishesService) GetBundle(ctx context.Context, id uint64) (resp *pb.Bund
 		return nil, fmt.Errorf("failed to get bundle %d: %w", id, err)
 	}
 	resp = &pb.BundleV1{
-		Id:    bundle.Id,
+		Id:    bundle.ID,
 		Name:  bundle.Name,
 		Price: bundle.Price,
 	}
@@ -226,7 +226,7 @@ func (d *dishesService) ListBundles(ctx context.Context) (resp []*pb.BundleV1, e
 	resp = make([]*pb.BundleV1, len(bundles))
 	for index, bundle := range bundles {
 		resp[index] = &pb.BundleV1{
-			Id:    bundle.Id,
+			Id:    bundle.ID,
 			Name:  bundle.Name,
 			Price: bundle.Price,
 		}
@@ -234,33 +234,33 @@ func (d *dishesService) ListBundles(ctx context.Context) (resp []*pb.BundleV1, e
 	return
 }
 
-func (d *dishesService) AddBundleWeeklyDish(ctx context.Context, weekNumber, bundleId, dishId uint64) (err error) {
-	err = d.repo.AddBundleWeeklyDish(ctx, weekNumber, bundleId, dishId)
+func (d *dishesService) AddBundleWeeklyDish(ctx context.Context, weekNumber, bundleID, dishID uint64) (err error) {
+	err = d.repo.AddBundleWeeklyDish(ctx, weekNumber, bundleID, dishID)
 	return
 }
 
-func (d *dishesService) DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bundleId, dishId uint64) (err error) {
-	err = d.repo.DeleteBundleWeeklyDish(ctx, weekNumber, bundleId, dishId)
+func (d *dishesService) DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bundleID, dishID uint64) (err error) {
+	err = d.repo.DeleteBundleWeeklyDish(ctx, weekNumber, bundleID, dishID)
 	return
 }
 
-func (d *dishesService) GetBundleWeeklyDishes(ctx context.Context, weekNumber, bundleId uint64) (resp []*pb.DishV1, err error) {
-	dishes, err := d.repo.GetBundleWeeklyDishes(ctx, weekNumber, bundleId)
+func (d *dishesService) GetBundleWeeklyDishes(ctx context.Context, weekNumber, bundleID uint64) (resp []*pb.DishV1, err error) {
+	dishes, err := d.repo.GetBundleWeeklyDishes(ctx, weekNumber, bundleID)
 	if err != nil {
-		logger.Logger().Infoln("Failed to list bundle %d dishes for week: ", bundleId, weekNumber, err)
-		return nil, fmt.Errorf("failed to list bundle %d dishes for week %d: %w", bundleId, weekNumber, err)
+		logger.Logger().Infoln("Failed to list bundle %d dishes for week: ", bundleID, weekNumber, err)
+		return nil, fmt.Errorf("failed to list bundle %d dishes for week %d: %w", bundleID, weekNumber, err)
 	}
 	resp = make([]*pb.DishV1, len(dishes))
 	for dishIndex, dish := range dishes {
 		resp[dishIndex] = &pb.DishV1{
-			Id:          dish.Id,
+			Id:          dish.ID,
 			Name:        dish.Name,
 			Description: dish.Description,
 		}
 		resp[dishIndex].Ingredients = make([]*pb.DishIngredientV1, len(dish.Ingredients))
 		for index, i := range dish.Ingredients {
 			resp[dishIndex].Ingredients[index] = &pb.DishIngredientV1{
-				Id:   i.Id,
+				Id:   i.ID,
 				Name: i.Name,
 				Unit: i.Unit,
 				Qty:  i.Qty,
@@ -277,7 +277,7 @@ func (d *dishesService) GetBundleWeeklyDishes(ctx context.Context, weekNumber, b
 	DeleteResource(ctx context.Context, id uint64) error
 	ListResources(ctx context.Context) ([]*pb.ResourceV1, error)
 
-	AttachResourceToDish(ctx context.Context, resourceId, dishId uint64) error
-	DetachResourceFromDish(ctx context.Context, resourceId, dishId uint64) error
-	ListDishResources(ctx context.Context, dishId uint64) ([]*pb.ResourceV1, error)
+	AttachResourceToDish(ctx context.Context, resourceId, dishID uint64) error
+	DetachResourceFromDish(ctx context.Context, resourceId, dishID uint64) error
+	ListDishResources(ctx context.Context, dishID uint64) ([]*pb.ResourceV1, error)
 */

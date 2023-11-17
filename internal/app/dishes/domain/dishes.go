@@ -25,9 +25,9 @@ type DishesService interface {
 	DeleteBundle(ctx context.Context, id uint64) error
 	ListBundles(ctx context.Context) ([]*pb.BundleV1, error)
 
-	AddBundleWeeklyDish(ctx context.Context, weekNumber, bundleId, dishId uint64) error
-	DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bundleId, dishId uint64) error
-	GetBundleWeeklyDishes(ctx context.Context, weekNumber, bundleId uint64) ([]*pb.DishV1, error)
+	AddBundleWeeklyDish(ctx context.Context, weekNumber, bundleID, dishID uint64) error
+	DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bundleID, dishID uint64) error
+	GetBundleWeeklyDishes(ctx context.Context, weekNumber, bundleID uint64) ([]*pb.DishV1, error)
 	/*
 		StoreResource(ctx context.Context, resource *pb.ResourceV1) error
 		UpdateResource(ctx context.Context, resource *pb.ResourceV1) error
@@ -35,9 +35,9 @@ type DishesService interface {
 		DeleteResource(ctx context.Context, id uint64) error
 		ListResources(ctx context.Context) ([]*pb.ResourceV1, error)
 
-		AttachResourceToDish(ctx context.Context, resourceId, dishId uint64) error
-		DetachResourceFromDish(ctx context.Context, resourceId, dishId uint64) error
-		ListDishResources(ctx context.Context, dishId uint64) ([]*pb.ResourceV1, error)
+		AttachResourceToDish(ctx context.Context, resourceID, dishID uint64) error
+		DetachResourceFromDish(ctx context.Context, resourceID, dishID uint64) error
+		ListDishResources(ctx context.Context, dishID uint64) ([]*pb.ResourceV1, error)
 
 		SendOrder(ctx context.Context, order *pb.SendOrderRequestV1) error
 		CancelOrder(ctx context.Context, order *pb.CancelOrderRequestV1) error
@@ -63,9 +63,9 @@ type DishesRepository interface {
 	DeleteBundle(ctx context.Context, id uint64) error
 	ListBundles(ctx context.Context) ([]*Bundle, error)
 
-	AddBundleWeeklyDish(ctx context.Context, weekNumber, bundleId, dishId uint64) error
-	DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bundleId, dishId uint64) error
-	GetBundleWeeklyDishes(ctx context.Context, weekNumber, bundleId uint64) ([]*Dish, error)
+	AddBundleWeeklyDish(ctx context.Context, weekNumber, bundleID, dishID uint64) error
+	DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bundleID, dishID uint64) error
+	GetBundleWeeklyDishes(ctx context.Context, weekNumber, bundleID uint64) ([]*Dish, error)
 	/*
 		StoreResource(ctx context.Context, resource *Resource) error
 		UpdateResource(ctx context.Context, resource *Resource) error
@@ -73,9 +73,9 @@ type DishesRepository interface {
 		DeleteResource(ctx context.Context, id uint64) error
 		ListResources(ctx context.Context) ([]*Resource, error)
 
-		AttachResourceToDish(ctx context.Context, resourceId, dishId uint64) error
-		DetachResourceFromDish(ctx context.Context, resourceId, dishId uint64) error
-		ListDishResources(ctx context.Context, dishId uint64) ([]*Resource, error)
+		AttachResourceToDish(ctx context.Context, resourceID, dishID uint64) error
+		DetachResourceFromDish(ctx context.Context, resourceID, dishID uint64) error
+		ListDishResources(ctx context.Context, dishID uint64) ([]*Resource, error)
 	*/
 	Ping(ctx context.Context) error
 	ClosePool() error

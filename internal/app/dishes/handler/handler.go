@@ -45,6 +45,10 @@ func (s *DishesServerV1) DeleteIngredientV1(ctx context.Context, req *pb.Ingredi
 
 func (s *DishesServerV1) ListIngredientsV1(in *emptypb.Empty, stream pb.DishesServiceV1_ListIngredientsV1Server) (err error) {
 	allIngredients, err := s.service.ListIngredients(stream.Context())
+	if err != nil {
+		logger.Logger().Infoln("Error calling service ListIngredients: ", err)
+		return fmt.Errorf("failed calling service ListIngredients: %w", err)
+	}
 	for _, i := range allIngredients {
 		err = stream.Send(i)
 		if err != nil {

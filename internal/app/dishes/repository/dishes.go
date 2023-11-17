@@ -142,7 +142,7 @@ func (dbs *dbStorage) UpdateIngredient(ctx context.Context, ingredient *domain.I
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 
 		commandTag, err := tx.Exec(ctx, "UPDATE ingredients SET name = $1, unit = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3",
-			ingredient.Name, ingredient.Unit, ingredient.Id)
+			ingredient.Name, ingredient.Unit, ingredient.ID)
 		if err != nil {
 			return
 		}
@@ -156,7 +156,7 @@ func (dbs *dbStorage) UpdateIngredient(ctx context.Context, ingredient *domain.I
 }
 func (dbs *dbStorage) GetIngredient(ctx context.Context, id uint64) (ingredient *domain.Ingredient, err error) {
 
-	ingredient = &domain.Ingredient{Id: id}
+	ingredient = &domain.Ingredient{ID: id}
 
 	err = dbs.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) (err error) {
 		err = conn.QueryRow(ctx, "SELECT name, unit FROM ingredients WHERE id = $1 LIMIT 1", id).
@@ -196,6 +196,10 @@ func (dbs *dbStorage) ListIngredients(ctx context.Context) (ingredients []*domai
 		err = conn.QueryRow(ctx, "SELECT count(*) FROM ingredients").
 			Scan(&totalRows)
 
+		if err != nil {
+			return subErrors.ErrorNoRowsWhileListing
+		}
+
 		if totalRows == 0 {
 			return subErrors.ErrorNoRowsWhileListing
 		}
@@ -210,7 +214,7 @@ func (dbs *dbStorage) ListIngredients(ctx context.Context) (ingredients []*domai
 		counter := 0
 		for rows.Next() {
 			i := &domain.Ingredient{}
-			err = rows.Scan(&i.Id, &i.Name, &i.Unit)
+			err = rows.Scan(&i.ID, &i.Name, &i.Unit)
 			if err != nil {
 				return subErrors.ErrorWhileScanning
 			}
@@ -253,7 +257,7 @@ func (dbs *dbStorage) StoreDish(ctx context.Context, dish *domain.Dish) (err err
 
 		for _, value := range dish.Ingredients {
 			batch.Queue("INSERT INTO dishes_ingredients (id, dish_id, ingredient_id, qty) VALUES(DEFAULT, $1, $2, $3)",
-				dish.Id, value.Id, value.Qty)
+				dish.ID, value.ID, value.Qty)
 		}
 
 		br := tx.SendBatch(ctx, batch)
@@ -282,7 +286,7 @@ func (dbs *dbStorage) UpdateDish(ctx context.Context, dish *domain.Dish) (err er
 
 		commandTag, err := tx.Exec(ctx, "UPDATE dishes SET name = $1, description = $2, "+
 			"updated_at = CURRENT_TIMESTAMP WHERE id = $3",
-			dish.Name, dish.Description, dish.Id)
+			dish.Name, dish.Description, dish.ID)
 		if err != nil {
 			return
 		}
@@ -297,7 +301,7 @@ func (dbs *dbStorage) UpdateDish(ctx context.Context, dish *domain.Dish) (err er
 		}
 
 		//delete old ingredients info
-		_, err = tx.Exec(ctx, "DELETE FROM dishes_ingredients WHERE dish_id = $1", dish.Id)
+		_, err = tx.Exec(ctx, "DELETE FROM dishes_ingredients WHERE dish_id = $1", dish.ID)
 		if err != nil {
 			logger.Logger().Errorln(err)
 		}
@@ -313,7 +317,7 @@ func (dbs *dbStorage) UpdateDish(ctx context.Context, dish *domain.Dish) (err er
 
 		for _, value := range dish.Ingredients {
 			batch.Queue("INSERT INTO dishes_ingredients (id, dish_id, ingredient_id, qty) VALUES(DEFAULT, $1, $2, $3)",
-				dish.Id, value.Id, value.Qty)
+				dish.ID, value.ID, value.Qty)
 		}
 
 		br := tx.SendBatch(ctx, batch)
@@ -339,12 +343,16 @@ func (dbs *dbStorage) UpdateDish(ctx context.Context, dish *domain.Dish) (err er
 }
 
 func (dbs *dbStorage) GetDish(ctx context.Context, id uint64) (dish *domain.Dish, err error) {
-	dish = &domain.Dish{Id: id}
+	dish = &domain.Dish{ID: id}
 
 	err = dbs.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) (err error) {
 		var totalRows int
 		err = conn.QueryRow(ctx, "SELECT count(*) FROM dishes_ingredients WHERE dish_id = $1", id).
 			Scan(&totalRows)
+
+		if err != nil {
+			return subErrors.ErrorWhileScanning
+		}
 
 		rows, err := conn.Query(ctx, "SELECT dishes.name, dishes.description, dishes_ingredients.qty, "+
 			"ingredients.id, ingredients.name, ingredients.unit FROM dishes "+
@@ -357,7 +365,7 @@ func (dbs *dbStorage) GetDish(ctx context.Context, id uint64) (dish *domain.Dish
 		counter := 0
 		for rows.Next() {
 			i := &domain.DishIngredient{}
-			err = rows.Scan(&dish.Name, &dish.Description, &i.Qty, &i.Id, &i.Name, &i.Unit)
+			err = rows.Scan(&dish.Name, &dish.Description, &i.Qty, &i.ID, &i.Name, &i.Unit)
 			if err != nil {
 				return subErrors.ErrorWhileScanning
 			}
@@ -395,6 +403,10 @@ func (dbs *dbStorage) ListDishes(ctx context.Context) (dishes []*domain.Dish, er
 		err = conn.QueryRow(ctx, "SELECT count(*) FROM dishes").
 			Scan(&totalRows)
 
+		if err != nil {
+			return subErrors.ErrorNoRowsWhileListing
+		}
+
 		if totalRows == 0 {
 			return subErrors.ErrorNoRowsWhileListing
 		}
@@ -409,7 +421,7 @@ func (dbs *dbStorage) ListDishes(ctx context.Context) (dishes []*domain.Dish, er
 		counter := 0
 		for rows.Next() {
 			d := &domain.Dish{}
-			err = rows.Scan(&d.Id, &d.Name, &d.Description)
+			err = rows.Scan(&d.ID, &d.Name, &d.Description)
 			if err != nil {
 				return subErrors.ErrorWhileScanning
 			}
@@ -446,7 +458,7 @@ func (dbs *dbStorage) UpdateBundle(ctx context.Context, bundle *domain.Bundle) (
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 
 		commandTag, err := tx.Exec(ctx, "UPDATE bundles SET name = $1, price = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3",
-			bundle.Name, bundle.Price, bundle.Id)
+			bundle.Name, bundle.Price, bundle.ID)
 		if err != nil {
 			return
 		}
@@ -459,7 +471,7 @@ func (dbs *dbStorage) UpdateBundle(ctx context.Context, bundle *domain.Bundle) (
 	})
 }
 func (dbs *dbStorage) GetBundle(ctx context.Context, id uint64) (bundle *domain.Bundle, err error) {
-	bundle = &domain.Bundle{Id: id}
+	bundle = &domain.Bundle{ID: id}
 
 	err = dbs.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) (err error) {
 		err = conn.QueryRow(ctx, "SELECT name, price FROM bundles WHERE id = $1 LIMIT 1", id).
@@ -508,7 +520,7 @@ func (dbs *dbStorage) ListBundles(ctx context.Context) (bundles []*domain.Bundle
 		counter := 0
 		for rows.Next() {
 			b := &domain.Bundle{}
-			err = rows.Scan(&b.Id, &b.Name, &b.Price)
+			err = rows.Scan(&b.ID, &b.Name, &b.Price)
 			if err != nil {
 				return subErrors.ErrorWhileScanning
 			}
@@ -522,17 +534,17 @@ func (dbs *dbStorage) ListBundles(ctx context.Context) (bundles []*domain.Bundle
 	return
 }
 
-func (dbs *dbStorage) AddBundleWeeklyDish(ctx context.Context, weekNumber, bundleId, dishId uint64) (err error) {
+func (dbs *dbStorage) AddBundleWeeklyDish(ctx context.Context, weekNumber, bundleID, dishID uint64) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 		_, err = tx.Exec(ctx, "INSERT INTO bundles_dishes VALUES(DEFAULT, $1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-			weekNumber, bundleId, dishId)
+			weekNumber, bundleID, dishID)
 		return
 	})
 }
-func (dbs *dbStorage) DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bundleId, dishId uint64) (err error) {
+func (dbs *dbStorage) DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bundleID, dishID uint64) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 		commandTag, err := tx.Exec(ctx, "DELETE FROM bundles_dishes WHERE week_number = $1 AND bundle_id = $2 AND dish_id = $3",
-			weekNumber, bundleId, dishId)
+			weekNumber, bundleID, dishID)
 
 		if commandTag.RowsAffected() == 0 {
 			return subErrors.ErrorNoRowsUpdated
@@ -541,21 +553,25 @@ func (dbs *dbStorage) DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bu
 		return
 	})
 }
-func (dbs *dbStorage) GetBundleWeeklyDishes(ctx context.Context, weekNumber, bundleId uint64) (dishes []*domain.Dish, err error) {
+func (dbs *dbStorage) GetBundleWeeklyDishes(ctx context.Context, weekNumber, bundleID uint64) (dishes []*domain.Dish, err error) {
 	err = dbs.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) (err error) {
 
 		var totalRows int
 
 		err = conn.QueryRow(ctx, "SELECT count(*) FROM bundles_dishes WHERE week_number = $1 AND bundle_id = $2",
-			weekNumber, bundleId).
+			weekNumber, bundleID).
 			Scan(&totalRows)
+
+		if err != nil {
+			return subErrors.ErrorNoRowsWhileListing
+		}
 
 		if totalRows == 0 {
 			return subErrors.ErrorNoRowsWhileListing
 		}
 
 		rows, err := conn.Query(ctx, "SELECT dish_id FROM bundles_dishes WHERE week_number = $1 AND bundle_id = $2",
-			weekNumber, bundleId)
+			weekNumber, bundleID)
 
 		if err != nil {
 			return subErrors.ErrorNoRowsWhileListing
@@ -564,14 +580,14 @@ func (dbs *dbStorage) GetBundleWeeklyDishes(ctx context.Context, weekNumber, bun
 		dishes = make([]*domain.Dish, totalRows)
 		counter := 0
 		for rows.Next() {
-			var dishId uint64
-			err = rows.Scan(&dishId)
+			var dishID uint64
+			err = rows.Scan(&dishID)
 			if err != nil {
 				return subErrors.ErrorWhileScanning
 			}
 
 			//not sure if it's the most optimised way to get the info, but join over 5 tables looks questionable either
-			currDish, getErr := dbs.GetDish(ctx, dishId)
+			currDish, getErr := dbs.GetDish(ctx, dishID)
 			if getErr != nil {
 				return getErr
 			}

@@ -29,37 +29,37 @@ func (tl *testLogger) String() string {
 }
 
 func (tl *testLogger) Debugln(args ...interface{}) {
-	var argsForAnyLevel []interface{} = args
+	var argsForAnyLevel = args
 	tl.AnyLevelln(argsForAnyLevel)
 }
 
 func (tl *testLogger) Infoln(args ...interface{}) {
-	var argsForAnyLevel []interface{} = args
+	var argsForAnyLevel = args
 	tl.AnyLevelln(argsForAnyLevel)
 }
 
 func (tl *testLogger) Warnln(args ...interface{}) {
-	var argsForAnyLevel []interface{} = args
+	var argsForAnyLevel = args
 	tl.AnyLevelln(argsForAnyLevel)
 }
 
 func (tl *testLogger) Errorln(args ...interface{}) {
-	var argsForAnyLevel []interface{} = args
+	var argsForAnyLevel = args
 	tl.AnyLevelln(argsForAnyLevel)
 }
 
 func (tl *testLogger) DPanicln(args ...interface{}) {
-	var argsForAnyLevel []interface{} = args
+	var argsForAnyLevel = args
 	tl.AnyLevelln(argsForAnyLevel)
 }
 
 func (tl *testLogger) Panicln(args ...interface{}) {
-	var argsForAnyLevel []interface{} = args
+	var argsForAnyLevel = args
 	tl.AnyLevelln(argsForAnyLevel)
 }
 
 func (tl *testLogger) Fatalln(args ...interface{}) {
-	var argsForAnyLevel []interface{} = args
+	var argsForAnyLevel = args
 	tl.AnyLevelln(argsForAnyLevel)
 }
 

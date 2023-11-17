@@ -26,9 +26,9 @@ type StorageGen interface {
 	DeleteBundle(ctx context.Context, id uint64) error
 	ListBundles(ctx context.Context) ([]*domain.Bundle, error)
 
-	AddBundleWeeklyDish(ctx context.Context, weekNumber, bundleId, dishId uint64) error
-	DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bundleId, dishId uint64) error
-	GetBundleWeeklyDishes(ctx context.Context, weekNumber, bundleId uint64) ([]*domain.Dish, error)
+	AddBundleWeeklyDish(ctx context.Context, weekNumber, bundleID, dishID uint64) error
+	DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bundleID, dishID uint64) error
+	GetBundleWeeklyDishes(ctx context.Context, weekNumber, bundleID uint64) ([]*domain.Dish, error)
 	/*
 		StoreResource(ctx context.Context, resource *domain.Resource) error
 		UpdateResource(ctx context.Context, resource *domain.Resource) error
@@ -36,9 +36,9 @@ type StorageGen interface {
 		DeleteResource(ctx context.Context, id uint64) error
 		ListResources(ctx context.Context) ([]*domain.Resource, error)
 
-		AttachResourceToDish(ctx context.Context, resourceId, dishId uint64) error
-		DetachResourceFromDish(ctx context.Context, resourceId, dishId uint64) error
-		ListDishResources(ctx context.Context, dishId uint64) ([]*domain.Resource, error)
+		AttachResourceToDish(ctx context.Context, resourceId, dishID uint64) error
+		DetachResourceFromDish(ctx context.Context, resourceId, dishID uint64) error
+		ListDishResources(ctx context.Context, dishID uint64) ([]*domain.Resource, error)
 	*/
 	Ping(ctx context.Context) error
 	ClosePool() error
