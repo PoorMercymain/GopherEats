@@ -1,6 +1,6 @@
 module github.com/PoorMercymain/GopherEats
 
-go 1.21
+go 1.19
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.31.0-20231106192134-1baebb0a1518.2
