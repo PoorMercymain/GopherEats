@@ -44,7 +44,16 @@ func main() {
 	}
 
 	repo, err := repository.NewDBStorage(serverConfig.DatabaseDSN)
+
+	if err != nil {
+		logger.Logger().Fatalln("Failed to get repo:", err)
+	}
+
 	service, err := service.NewDishesServiceWithRepository(repo)
+
+	if err != nil {
+		logger.Logger().Fatalln("Failed to get service:", err)
+	}
 
 	ctx := context.Background()
 
@@ -89,6 +98,6 @@ func listenAndServeGrpc(ctx context.Context, s *grpc.Server, listen net.Listener
 	err := s.Serve(listen)
 	if err != nil {
 		logger.Logger().Infoln("listenAndServe gRPC err: ", err)
-		cancelCtx()
 	}
+	cancelCtx()
 }
