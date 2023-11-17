@@ -506,6 +506,10 @@ func (dbs *dbStorage) ListBundles(ctx context.Context) (bundles []*domain.Bundle
 		err = conn.QueryRow(ctx, "SELECT count(*) FROM bundles").
 			Scan(&totalRows)
 
+		if err != nil {
+			return subErrors.ErrorNoRowsWhileListing
+		}
+
 		if totalRows == 0 {
 			return subErrors.ErrorNoRowsWhileListing
 		}

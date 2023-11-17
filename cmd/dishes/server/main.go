@@ -70,11 +70,12 @@ func main() {
 
 	select {
 	case <-ctx.Done():
-		err := context.Cause(ctx)
-		if err != nil {
-			logger.Logger().Fatalln("Context cancelled: ", err)
-		}
-
+		/*
+			err := context.Cause(ctx)
+			if err != nil {
+				logger.Logger().Fatalln("Context cancelled: ", err)
+			}
+		*/
 	case <-sigChan:
 		logger.Logger().Infoln("Shutdown signal")
 
@@ -84,10 +85,10 @@ func main() {
 }
 
 func listenAndServeGrpc(ctx context.Context, s *grpc.Server, listen net.Listener) {
-	_, cancelCtx := context.WithCancelCause(ctx)
+	_, cancelCtx := context.WithCancel(ctx)
 	err := s.Serve(listen)
 	if err != nil {
 		logger.Logger().Infoln("listenAndServe gRPC err: ", err)
-		cancelCtx(err)
+		cancelCtx()
 	}
 }
