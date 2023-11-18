@@ -1,3 +1,4 @@
+// Package logger implements wrapper for zap logger.
 package logger
 
 import (

@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// CheckCIDR parses CIDR record
 func CheckCIDR(CIDR string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		const registerMethodName = "/api.auth.v1.AuthV1/RegisterV1"

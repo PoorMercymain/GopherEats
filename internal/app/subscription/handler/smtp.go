@@ -14,6 +14,7 @@ type smtpSender struct {
 	port     string
 }
 
+// SendEmail sends email to user.
 func (s *smtpSender) SendEmail(ctx context.Context, to string, subject string, message string) error {
 	auth := smtp.PlainAuth("", s.username, s.password, s.server)
 

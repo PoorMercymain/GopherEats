@@ -15,6 +15,7 @@ type mCollection struct {
 	*sync.RWMutex
 }
 
+// InsertOne executes an insert command to insert a single document into the collection.
 func (mc *mCollection) InsertOne(ctx context.Context, document interface{}) error {
 	mc.Lock()
 	_, err := mc.mongoCollection.InsertOne(ctx, document)
@@ -27,6 +28,7 @@ func (mc *mCollection) InsertOne(ctx context.Context, document interface{}) erro
 	return err
 }
 
+// FindOne executes a find command and returns a SingleResult for one document in the collection.
 func (mc *mCollection) FindOne(ctx context.Context, filter interface{}) (*mongo.SingleResult, error) {
 	mc.RLock()
 	findResult := mc.mongoCollection.FindOne(ctx, filter)
@@ -43,6 +45,7 @@ func (mc *mCollection) FindOne(ctx context.Context, filter interface{}) (*mongo.
 	return findResult, nil
 }
 
+// UpdateOne executes an update command to update at most one document in the collection.
 func (mc *mCollection) UpdateOne(ctx context.Context, filter interface{}, update interface{}) (*mongo.UpdateResult, error) {
 	mc.Lock()
 	updateResult, err := mc.mongoCollection.UpdateOne(ctx, filter, update)

@@ -1,3 +1,4 @@
+// Package domain contains interfaces for auth service.
 package domain
 
 import "context"

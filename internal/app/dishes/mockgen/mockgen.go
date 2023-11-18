@@ -1,3 +1,4 @@
+// Package mockgen contains mockgen commands for mocks generation.
 package mockgen
 
 import (

@@ -1,6 +1,4 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
+// Package main initializes dishes CLI client and starts it.
 package main
 
 import "github.com/PoorMercymain/GopherEats/cmd/dishes/client/cmd"

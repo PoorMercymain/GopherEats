@@ -1,3 +1,4 @@
+// Package token contains JWT token handling for auth service.
 package token
 
 import (
@@ -8,6 +9,7 @@ import (
 	"github.com/PoorMercymain/GopherEats/internal/app/auth/errors"
 )
 
+// JWT returns new json web token.
 func JWT(email string, passwordHash string, jwtKey string) (string, error) {
 	claims := jwt.MapClaims{
 		"email": email,
@@ -25,6 +27,7 @@ func JWT(email string, passwordHash string, jwtKey string) (string, error) {
 	return tokenString, nil
 }
 
+// GetAuthDataFromJWT parses JWT and returns email, password hash or expiration error.
 func GetAuthDataFromJWT(token string, jwtKey string) (string, string, error) {
 	claims := jwt.MapClaims{
 		"email": "",

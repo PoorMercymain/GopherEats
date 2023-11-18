@@ -1,3 +1,4 @@
+// Package main initializes auth service and starts it.
 package main
 
 import (

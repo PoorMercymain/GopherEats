@@ -1,3 +1,4 @@
+// Package handler contains handlers for auth service.
 package handler
 
 import (
@@ -28,10 +29,12 @@ type auth struct {
 	api.UnimplementedAuthV1Server
 }
 
+// New function returns pointer to new instance of auth handler struct.
 func New(srv domain.AuthService, kafkaConsumer sarama.Consumer, jwtSecretKey string) *auth {
 	return &auth{srv: srv, kafkaConsumer: kafkaConsumer, jwtSecretKey: jwtSecretKey, msgFromKafkaChan: make(chan string, 1)}
 }
 
+// RegisterV1 function registers new user.
 func (h *auth) RegisterV1(ctx context.Context, r *api.RegisterRequestV1) (*api.RegisterResponseV1, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -76,6 +79,7 @@ func (h *auth) RegisterV1(ctx context.Context, r *api.RegisterRequestV1) (*api.R
 	return &api.RegisterResponseV1{OtpSecretKey: secretKey}, nil
 }
 
+// LoginV1 function allow to log in existing user.
 func (h *auth) LoginV1(ctx context.Context, r *api.LoginRequestV1) (*api.LoginResponseV1, error) {
 	if !email.ValidateEmail(r.Email) {
 		return nil, status.Errorf(codes.InvalidArgument, "wrong format of email used")
@@ -113,6 +117,7 @@ func (h *auth) LoginV1(ctx context.Context, r *api.LoginRequestV1) (*api.LoginRe
 	return &api.LoginResponseV1{Token: jwt, Warning: warning}, nil
 }
 
+// ChangePasswordV1 function allows to change password for existing user.
 func (h *auth) ChangePasswordV1(ctx context.Context, r *api.ChangePasswordRequestV1) (*emptypb.Empty, error) {
 	if !email.ValidateEmail(r.Email) {
 		return &emptypb.Empty{}, status.Errorf(codes.InvalidArgument, "wrong format of email used")
@@ -138,6 +143,7 @@ func (h *auth) ChangePasswordV1(ctx context.Context, r *api.ChangePasswordReques
 	return &emptypb.Empty{}, nil
 }
 
+// LoginWithOTPV1 function allows to log in with one-time password.
 func (h *auth) LoginWithOTPV1(ctx context.Context, r *api.LoginWithOTPRequestV1) (*api.LoginResponseV1, error) {
 	if !email.ValidateEmail(r.Email) {
 		return nil, status.Errorf(codes.InvalidArgument, "wrong format of email used")
@@ -175,6 +181,7 @@ func (h *auth) LoginWithOTPV1(ctx context.Context, r *api.LoginWithOTPRequestV1)
 	return &api.LoginResponseV1{Token: jwt, Warning: warning}, nil
 }
 
+// ChangeAddressV1 function allows to change delivery address for customer.
 func (h *auth) ChangeAddressV1(ctx context.Context, r *api.ChangeAddressRequestV1) (*emptypb.Empty, error) {
 	if !email.ValidateEmail(r.Email) {
 		return &emptypb.Empty{}, status.Errorf(codes.InvalidArgument, "wrong format of email used")
@@ -200,6 +207,7 @@ func (h *auth) ChangeAddressV1(ctx context.Context, r *api.ChangeAddressRequestV
 	return &emptypb.Empty{}, nil
 }
 
+// CheckTokenInMetadataV1 checks authorization token.
 func (h *auth) CheckTokenInMetadataV1(ctx context.Context, r *emptypb.Empty) (*emptypb.Empty, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -234,6 +242,7 @@ func (h *auth) CheckTokenInMetadataV1(ctx context.Context, r *emptypb.Empty) (*e
 	return &emptypb.Empty{}, nil
 }
 
+// CheckIfUserIsAdminV1 returns whether user has admin role.
 func (h *auth) CheckIfUserIsAdminV1(ctx context.Context, r *api.CheckIfUserIsAdminRequestV1) (*api.CheckIfUserIsAdminResponseV1, error) {
 	if !email.ValidateEmail(r.Email) {
 		return nil, status.Errorf(codes.InvalidArgument, "wrong format of email used")
@@ -252,6 +261,7 @@ func (h *auth) CheckIfUserIsAdminV1(ctx context.Context, r *api.CheckIfUserIsAdm
 	return &api.CheckIfUserIsAdminResponseV1{IsAdmin: isAdmin}, nil
 }
 
+// GetEmailFromTokenInMetadataV1 returns email address for authorization token.
 func (h *auth) GetEmailFromTokenInMetadataV1(ctx context.Context, r *emptypb.Empty) (*api.GetEmailFromTokenInMetadataResponseV1, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -286,6 +296,7 @@ func (h *auth) GetEmailFromTokenInMetadataV1(ctx context.Context, r *emptypb.Emp
 	return &api.GetEmailFromTokenInMetadataResponseV1{Email: emailAddress}, nil
 }
 
+// GetAddressV1 returns address
 func (h *auth) GetAddressV1(ctx context.Context, r *api.GetAddressRequestV1) (*api.GetAddressResponseV1, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -319,6 +330,7 @@ func (h *auth) GetAddressV1(ctx context.Context, r *api.GetAddressRequestV1) (*a
 	return &api.GetAddressResponseV1{Address: address}, nil
 }
 
+// ReadFromKafka reads messages from Kafka.
 func (h *auth) ReadFromKafka(ctx context.Context, topics []string) error {
 	// Подписываемся на топики
 	partitionConsumer, err := h.kafkaConsumer.ConsumePartition(topics[0], 0, sarama.OffsetNewest)
@@ -341,6 +353,7 @@ func (h *auth) ReadFromKafka(ctx context.Context, topics []string) error {
 	return nil
 }
 
+// SetWarnings sets warnings for user in case there's not enough funds on balance.
 func (h *auth) SetWarnings(ctx context.Context) error {
 	err := h.ReadFromKafka(ctx, []string{"cancel-subscription"})
 	if err != nil {

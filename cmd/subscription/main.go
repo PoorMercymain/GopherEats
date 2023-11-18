@@ -1,3 +1,4 @@
+// Package main initializes subscription service and starts it.
 package main
 
 import (

@@ -1,3 +1,4 @@
+// Package repository contains repository handling for dishes service.
 package repository
 
 import (
@@ -22,6 +23,7 @@ type dbStorage struct {
 	pgxPool *pgxpool.Pool
 }
 
+// NewDBStorage returns new repository.
 func NewDBStorage(DSN string) (storage domain.DishesRepository, err error) {
 	pg, err := sql.Open("pgx", DSN)
 	if err != nil {
@@ -82,6 +84,7 @@ func NewDBStorage(DSN string) (storage domain.DishesRepository, err error) {
 	return
 }
 
+// WithTransaction wraps postgres SQL queries with transaction.
 func (dbs *dbStorage) WithTransaction(ctx context.Context, txFunc func(context.Context, pgx.Tx) error) (err error) {
 	conn, err := dbs.pgxPool.Acquire(ctx)
 	if err != nil {
@@ -108,6 +111,7 @@ func (dbs *dbStorage) WithTransaction(ctx context.Context, txFunc func(context.C
 	return tx.Commit(ctx)
 }
 
+// WithConnection wraps postgres SQL queries with db connection.
 func (dbs *dbStorage) WithConnection(ctx context.Context, connFunc func(context.Context, *pgxpool.Conn) error) (err error) {
 	conn, err := dbs.pgxPool.Acquire(ctx)
 	if err != nil {
@@ -118,6 +122,7 @@ func (dbs *dbStorage) WithConnection(ctx context.Context, connFunc func(context.
 	return connFunc(ctx, conn)
 }
 
+// StoreIngredient stores ingredient info into repository.
 func (dbs *dbStorage) StoreIngredient(ctx context.Context, ingredient *domain.Ingredient) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 		_, err = tx.Exec(ctx, "INSERT INTO ingredients VALUES(DEFAULT, $1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
@@ -138,6 +143,7 @@ func (dbs *dbStorage) StoreIngredient(ctx context.Context, ingredient *domain.In
 	})
 }
 
+// UpdateIngredient updates ingredient info in repository.
 func (dbs *dbStorage) UpdateIngredient(ctx context.Context, ingredient *domain.Ingredient) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 
@@ -154,6 +160,8 @@ func (dbs *dbStorage) UpdateIngredient(ctx context.Context, ingredient *domain.I
 		return
 	})
 }
+
+// GetIngredient reads ingredient info from repo.
 func (dbs *dbStorage) GetIngredient(ctx context.Context, id uint64) (ingredient *domain.Ingredient, err error) {
 
 	ingredient = &domain.Ingredient{ID: id}
@@ -172,6 +180,7 @@ func (dbs *dbStorage) GetIngredient(ctx context.Context, id uint64) (ingredient 
 	return
 }
 
+// DeleteIngredient removes ingredient from repo.
 func (dbs *dbStorage) DeleteIngredient(ctx context.Context, id uint64) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 
@@ -187,6 +196,8 @@ func (dbs *dbStorage) DeleteIngredient(ctx context.Context, id uint64) (err erro
 		return
 	})
 }
+
+// ListIngredients returns all ingredients from repo.
 func (dbs *dbStorage) ListIngredients(ctx context.Context) (ingredients []*domain.Ingredient, err error) {
 
 	err = dbs.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) (err error) {
@@ -228,6 +239,7 @@ func (dbs *dbStorage) ListIngredients(ctx context.Context) (ingredients []*domai
 	return
 }
 
+// StoreDish saves new dish info into repo.
 func (dbs *dbStorage) StoreDish(ctx context.Context, dish *domain.Dish) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 		var id int
@@ -281,6 +293,8 @@ func (dbs *dbStorage) StoreDish(ctx context.Context, dish *domain.Dish) (err err
 		return
 	})
 }
+
+// UpdateDish updates existing Dish info in repo.
 func (dbs *dbStorage) UpdateDish(ctx context.Context, dish *domain.Dish) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 
@@ -342,6 +356,7 @@ func (dbs *dbStorage) UpdateDish(ctx context.Context, dish *domain.Dish) (err er
 	})
 }
 
+// GetDish returns Dish with nested Ingredients info.
 func (dbs *dbStorage) GetDish(ctx context.Context, id uint64) (dish *domain.Dish, err error) {
 	dish = &domain.Dish{ID: id}
 
@@ -378,6 +393,8 @@ func (dbs *dbStorage) GetDish(ctx context.Context, id uint64) (dish *domain.Dish
 
 	return
 }
+
+// DeleteDish removes Dish from repo.
 func (dbs *dbStorage) DeleteDish(ctx context.Context, id uint64) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 
@@ -395,6 +412,8 @@ func (dbs *dbStorage) DeleteDish(ctx context.Context, id uint64) (err error) {
 		return
 	})
 }
+
+// ListDishes returns list of all dishes in repo.
 func (dbs *dbStorage) ListDishes(ctx context.Context) (dishes []*domain.Dish, err error) {
 	err = dbs.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) (err error) {
 
@@ -435,6 +454,7 @@ func (dbs *dbStorage) ListDishes(ctx context.Context) (dishes []*domain.Dish, er
 	return
 }
 
+// StoreBundle saves new Bundle into repo.
 func (dbs *dbStorage) StoreBundle(ctx context.Context, bundle *domain.Bundle) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 		_, err = tx.Exec(ctx, "INSERT INTO bundles VALUES(DEFAULT, $1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
@@ -454,6 +474,8 @@ func (dbs *dbStorage) StoreBundle(ctx context.Context, bundle *domain.Bundle) (e
 		return
 	})
 }
+
+// UpdateBundle updates existing Bundle in repo.
 func (dbs *dbStorage) UpdateBundle(ctx context.Context, bundle *domain.Bundle) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 
@@ -470,6 +492,8 @@ func (dbs *dbStorage) UpdateBundle(ctx context.Context, bundle *domain.Bundle) (
 		return
 	})
 }
+
+// GetBundle returns Bundle info from repo.
 func (dbs *dbStorage) GetBundle(ctx context.Context, id uint64) (bundle *domain.Bundle, err error) {
 	bundle = &domain.Bundle{ID: id}
 
@@ -486,6 +510,8 @@ func (dbs *dbStorage) GetBundle(ctx context.Context, id uint64) (bundle *domain.
 
 	return
 }
+
+// DeleteBundle removes Bundle from repo.
 func (dbs *dbStorage) DeleteBundle(ctx context.Context, id uint64) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 
@@ -498,6 +524,8 @@ func (dbs *dbStorage) DeleteBundle(ctx context.Context, id uint64) (err error) {
 		return
 	})
 }
+
+// ListBundles returns array of all Bundles in repo.
 func (dbs *dbStorage) ListBundles(ctx context.Context) (bundles []*domain.Bundle, err error) {
 	err = dbs.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) (err error) {
 
@@ -538,6 +566,7 @@ func (dbs *dbStorage) ListBundles(ctx context.Context) (bundles []*domain.Bundle
 	return
 }
 
+// AddBundleWeeklyDish adds Dish to Bundle for passed week number.
 func (dbs *dbStorage) AddBundleWeeklyDish(ctx context.Context, weekNumber, bundleID, dishID uint64) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 		_, err = tx.Exec(ctx, "INSERT INTO bundles_dishes VALUES(DEFAULT, $1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
@@ -545,6 +574,8 @@ func (dbs *dbStorage) AddBundleWeeklyDish(ctx context.Context, weekNumber, bundl
 		return
 	})
 }
+
+// DeleteBundleWeeklyDish removes Dish from Bundle for passed week number.
 func (dbs *dbStorage) DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bundleID, dishID uint64) (err error) {
 	return dbs.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) (err error) {
 		commandTag, err := tx.Exec(ctx, "DELETE FROM bundles_dishes WHERE week_number = $1 AND bundle_id = $2 AND dish_id = $3",
@@ -557,6 +588,8 @@ func (dbs *dbStorage) DeleteBundleWeeklyDish(ctx context.Context, weekNumber, bu
 		return
 	})
 }
+
+// GetBundleWeeklyDishes returns array of all Dishes in Bundle for passed week number.
 func (dbs *dbStorage) GetBundleWeeklyDishes(ctx context.Context, weekNumber, bundleID uint64) (dishes []*domain.Dish, err error) {
 	err = dbs.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) (err error) {
 
@@ -605,11 +638,13 @@ func (dbs *dbStorage) GetBundleWeeklyDishes(ctx context.Context, weekNumber, bun
 	return
 }
 
+// ClosePool closes connections pool.
 func (dbs *dbStorage) ClosePool() (err error) {
 	dbs.pgxPool.Close()
 	return
 }
 
+// Ping allows to ping database and check connection.
 func (dbs *dbStorage) Ping(ctx context.Context) (err error) {
 	conn, err := dbs.pgxPool.Acquire(ctx)
 	if err != nil {

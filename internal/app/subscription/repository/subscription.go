@@ -1,3 +1,4 @@
+// Package repository contains repository handling for subscription service.
 package repository
 
 import (
@@ -25,6 +26,7 @@ type subscription struct {
 	pool *pgxpool.Pool
 }
 
+// DB returns new connection pool.
 func DB(dsn string) (*pgxpool.Pool, error) {
 	pg, err := sql.Open("pgx", dsn)
 	if err != nil {
@@ -59,10 +61,12 @@ func DB(dsn string) (*pgxpool.Pool, error) {
 	return pool, err
 }
 
+// New returns pointer to subscription repo struct with connection pool.
 func New(pool *pgxpool.Pool) *subscription {
 	return &subscription{pool: pool}
 }
 
+// WithTransaction wraps postgres SQL requests into transaction.
 func (r *subscription) WithTransaction(ctx context.Context, txFunc func(context.Context, pgx.Tx) error) error {
 	conn, err := r.pool.Acquire(ctx)
 	if err != nil {
@@ -89,6 +93,7 @@ func (r *subscription) WithTransaction(ctx context.Context, txFunc func(context.
 	return tx.Commit(ctx)
 }
 
+// WithConnection wraps postgres SQL queries with connection.
 func (r *subscription) WithConnection(ctx context.Context, connFunc func(context.Context, *pgxpool.Conn) error) error {
 	conn, err := r.pool.Acquire(ctx)
 	if err != nil {
@@ -99,6 +104,7 @@ func (r *subscription) WithConnection(ctx context.Context, connFunc func(context
 	return connFunc(ctx, conn)
 }
 
+// CreateSubscription creates new subscription.
 func (r *subscription) CreateSubscription(ctx context.Context, email string, bundleID int64) error {
 	return r.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) error {
 		_, err := tx.Exec(ctx, "INSERT INTO subscriptions VALUES($1, $2, $3)", email, bundleID, false)
@@ -118,6 +124,7 @@ func (r *subscription) CreateSubscription(ctx context.Context, email string, bun
 	})
 }
 
+// ReadSubscription returns subscription info.
 func (r *subscription) ReadSubscription(ctx context.Context, email string) (int64, bool, error) {
 	var bundleID int64
 	var isDeleted bool
@@ -143,6 +150,7 @@ func (r *subscription) ReadSubscription(ctx context.Context, email string) (int6
 	return bundleID, isDeleted, nil
 }
 
+// UpdateSubscription updates subscription.
 func (r *subscription) UpdateSubscription(ctx context.Context, email string, bundleID int64, isDeleted bool) error {
 	return r.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) error {
 		commandTag, err := tx.Exec(ctx, "UPDATE subscriptions SET bundle_id = $1, is_deleted = $2 WHERE email = $3", bundleID, isDeleted, email)
@@ -158,6 +166,7 @@ func (r *subscription) UpdateSubscription(ctx context.Context, email string, bun
 	})
 }
 
+// DeleteSubscription removes subscription for user with passed email.
 func (r *subscription) DeleteSubscription(ctx context.Context, email string) error {
 	return r.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) error {
 		commandTag, err := tx.Exec(ctx, "UPDATE subscriptions SET is_deleted = $1 WHERE email = $2 AND is_deleted = $3", true, email, false)
@@ -173,6 +182,7 @@ func (r *subscription) DeleteSubscription(ctx context.Context, email string) err
 	})
 }
 
+// AddBalance allows to add funds for user balance.
 func (r *subscription) AddBalance(ctx context.Context, email string, amount uint64) error {
 	return r.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) error {
 		_, err := tx.Exec(ctx, "INSERT INTO balances (email, current_balance) VALUES($1, $2) ON CONFLICT(email) DO UPDATE SET current_balance = balances.current_balance + EXCLUDED.current_balance", email, amount)
@@ -187,6 +197,7 @@ func (r *subscription) AddBalance(ctx context.Context, email string, amount uint
 	})
 }
 
+// ReadUserData returns user data.
 func (r *subscription) ReadUserData(ctx context.Context, email string) (domain.UserData, error) {
 	var userData domain.UserData
 
@@ -211,6 +222,7 @@ func (r *subscription) ReadUserData(ctx context.Context, email string) (domain.U
 	return userData, nil
 }
 
+// ReadBalanceHistory returns history of balance funding and purchases for user with passed email.
 func (r *subscription) ReadBalanceHistory(ctx context.Context, email string, page uint64) ([]*api.HistoryElementV1, error) {
 	var history = make([]*api.HistoryElementV1, 0)
 	err := r.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
@@ -248,6 +260,8 @@ func (r *subscription) ReadBalanceHistory(ctx context.Context, email string, pag
 // TODO: use struct of four channels: one to send bundle_ids to handler (to request their prices from dishes),
 // another - to receive the prices, the next - to send emails to handler to cancel unpaid subscriptions, and the last - to send email, bundle_id to handler,
 // combine them with week_number and address and send to dishes service
+
+// ChargeForSubscription allows to charge user balance.
 func (r *subscription) ChargeForSubscription(ctx context.Context, notEnoughFundsEmailsChan chan<- string) error {
 	return r.WithConnection(ctx, func(ctx context.Context, conn *pgxpool.Conn) error {
 		rows, err := conn.Query(ctx, "SELECT email, bundle_id FROM subscriptions WHERE is_deleted = $1", false)
@@ -288,6 +302,7 @@ func (r *subscription) ChargeForSubscription(ctx context.Context, notEnoughFunds
 	})
 }
 
+// RemoveAmountFromBalance decreases balance.
 func (r *subscription) RemoveAmountFromBalance(ctx context.Context, email string, amount uint64) error {
 	return r.WithTransaction(ctx, func(ctx context.Context, tx pgx.Tx) error {
 		commandTag, err := tx.Exec(ctx, "UPDATE balances SET current_balance = current_balance - $1 WHERE email = $2 AND current_balance > $1", amount, email)

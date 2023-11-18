@@ -31,11 +31,13 @@ type subscription struct {
 	api.UnimplementedSubscriptionV1Server
 }
 
+// New returns pointer to new instance of subscription struct with service, auth and Kafka producer.
 func New(srv domain.SubscriptionService, client auth.AuthV1Client, kafkaProducer sarama.SyncProducer, weekNumber *int, smtpUsername string, smtpPassword string, smtpServer string, smtpPort string) *subscription {
 	return &subscription{srv: srv, client: client, kafkaProducer: kafkaProducer, weekNumber: weekNumber,
 		emailSender: smtpSender{username: smtpUsername, password: smtpPassword, server: smtpServer, port: smtpPort}, notEnoughFundsEmailsChan: make(chan string, 1)}
 }
 
+// CreateSubscriptionV1 creates new subscription.
 func (h *subscription) CreateSubscriptionV1(ctx context.Context, r *api.CreateSubscriptionRequestV1) (*emptypb.Empty, error) {
 	err := h.srv.CreateSubscription(ctx, r.Email, r.BundleId)
 
@@ -50,6 +52,7 @@ func (h *subscription) CreateSubscriptionV1(ctx context.Context, r *api.CreateSu
 	return &emptypb.Empty{}, nil
 }
 
+// ReadSubscriptionV1 returns subscription info.
 func (h *subscription) ReadSubscriptionV1(ctx context.Context, r *api.ReadSubscriptionRequestV1) (*api.ReadSubscriptionResponseV1, error) {
 	bundleID, isDeleted, err := h.srv.ReadSubscription(ctx, r.Email)
 
@@ -64,6 +67,7 @@ func (h *subscription) ReadSubscriptionV1(ctx context.Context, r *api.ReadSubscr
 	return &api.ReadSubscriptionResponseV1{BundleId: bundleID, IsDeleted: isDeleted}, nil
 }
 
+// ChangeSubscriptionV1 updates subscription.
 func (h *subscription) ChangeSubscriptionV1(ctx context.Context, r *api.ChangeSubscriptionRequestV1) (*emptypb.Empty, error) {
 	err := h.srv.UpdateSubscription(ctx, r.Email, r.BundleId, r.IsDeleted)
 
@@ -78,6 +82,7 @@ func (h *subscription) ChangeSubscriptionV1(ctx context.Context, r *api.ChangeSu
 	return &emptypb.Empty{}, nil
 }
 
+// CancelSubscriptionV1 allows to cancel subscription.
 func (h *subscription) CancelSubscriptionV1(ctx context.Context, r *api.CancelSubscriptionRequestV1) (*emptypb.Empty, error) {
 	err := h.srv.CancelSubscription(ctx, r.Email)
 
@@ -92,6 +97,7 @@ func (h *subscription) CancelSubscriptionV1(ctx context.Context, r *api.CancelSu
 	return &emptypb.Empty{}, nil
 }
 
+// AddBalanceV1 adds funds to balance.
 func (h *subscription) AddBalanceV1(ctx context.Context, r *api.AddBalanceRequestV1) (*emptypb.Empty, error) {
 	err := h.srv.AddBalance(ctx, r.Email, r.Amount)
 	if err != nil {
@@ -101,6 +107,7 @@ func (h *subscription) AddBalanceV1(ctx context.Context, r *api.AddBalanceReques
 	return &emptypb.Empty{}, nil
 }
 
+// ReadUserDataV1 returns user data.
 func (h *subscription) ReadUserDataV1(ctx context.Context, r *api.ReadUserDataRequestV1) (*api.ReadUserDataResponseV1, error) {
 	addressResp, err := h.client.GetAddressV1(ctx, &auth.GetAddressRequestV1{Email: r.Email})
 	if err != nil {
@@ -115,6 +122,7 @@ func (h *subscription) ReadUserDataV1(ctx context.Context, r *api.ReadUserDataRe
 	return &api.ReadUserDataResponseV1{Address: addressResp.Address, BundleId: userData.BundleID, Balance: userData.Balance}, nil
 }
 
+// ReadBalanceHistoryV1 returns history of balance funding and purchases.
 func (h *subscription) ReadBalanceHistoryV1(ctx context.Context, r *api.ReadBalanceHistoryRequestV1) (*api.ReadBalanceHistoryResponseV1, error) {
 	history, err := h.srv.ReadBalanceHistory(ctx, r.Email, r.Page)
 	if errors.Is(err, subErrors.ErrorNoRowsWhileReading) {
@@ -128,10 +136,12 @@ func (h *subscription) ReadBalanceHistoryV1(ctx context.Context, r *api.ReadBala
 	return &api.ReadBalanceHistoryResponseV1{History: history}, nil
 }
 
+// SendEmail sends email to user.
 func (h *subscription) SendEmail(ctx context.Context, to string, subject string, message string) error {
 	return h.emailSender.SendEmail(ctx, to, subject, message)
 }
 
+// CountWeekAndCharge charges user for current week subscription.
 func (h *subscription) CountWeekAndCharge() {
 	currentTime := time.Now()
 
@@ -172,6 +182,7 @@ func (h *subscription) CountWeekAndCharge() {
 	}
 }
 
+// SendToKafka sends message to Kafka.
 func (h *subscription) SendToKafka(ctx context.Context, topic string, message string) error {
 	msg := &sarama.ProducerMessage{
 		Topic: topic,

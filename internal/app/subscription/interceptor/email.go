@@ -16,6 +16,7 @@ type emailProvider interface {
 	GetEmail() string
 }
 
+// ValidateRequestEmail validates email address.
 func ValidateRequestEmail(authGRPCClient auth.AuthV1Client) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		if ep, ok := req.(emailProvider); ok {

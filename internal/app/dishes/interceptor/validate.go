@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// ValidateRequestUnaryServerInterceptor validates fields in gRPC messages.
 func ValidateRequestUnaryServerInterceptor(validator *protovalidate.Validator) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
