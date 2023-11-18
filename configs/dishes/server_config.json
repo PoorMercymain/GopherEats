@@ -1,0 +1,4 @@
+{
+  "grpc_address": "localhost:3200",
+  "database_dsn": "host=localhost user=postgres password=postgres sslmode=disable dbname=dishes"
+ }

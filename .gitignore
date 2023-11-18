@@ -1,6 +1,13 @@
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
 #
+
+# GoLand files
+.idea/*
+
+# VS Code files
+.vscode/*
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -19,3 +26,18 @@
 
 # Go workspace file
 go.work
+
+# Log files
+*.log
+
+# protoc-gen-validate proto file
+api/proto/validate/validate.proto
+
+# certificate files
+cert/*
+
+# Mongo data
+/deployments/gophereats-mongo
+
+# Postgres data
+/deployments/gophereats-postgres

@@ -1,0 +1,7 @@
+FROM golang:1.20
+WORKDIR /gophereats
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . /gophereats
+RUN CGO_ENABLED=0 GOOS=linux go build -o /gophereats/cmd/dishes/bin/main /gophereats/cmd/dishes/main.go
+CMD ["bash", "-c", "/gophereats/cmd/dishes/bin/main"]

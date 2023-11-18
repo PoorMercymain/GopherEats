@@ -1,0 +1,201 @@
+syntax = "proto3";
+
+package api.dishes.v1;
+
+option go_package = "github.com/PoorMercymain/gophereats/pkg/api/dishes";
+
+import "google/protobuf/empty.proto";
+import "buf/validate/validate.proto";
+
+// DishesServiceV1 handles dishes receipts, ingredients and bundles
+service DishesServiceV1 {
+  // CreateIngredientV1 allows to create new ingredient
+  rpc CreateIngredientV1(CreateIngredientRequestV1)
+      returns (google.protobuf.Empty) {};
+  // UpdateIngredientV1 allows to edit existing ingredient
+  rpc UpdateIngredientV1(UpdateIngredientRequestV1)
+      returns (google.protobuf.Empty) {};
+  // GetIngredientV1 allows to read ingredient information
+  rpc GetIngredientV1(IngredientIdV1) returns (IngredientV1) {};
+  // DeleteIngredientV1 allows to delete existing ingredient
+  rpc DeleteIngredientV1(IngredientIdV1) returns (google.protobuf.Empty) {};
+  // ListIngredientsV1 allows to get list of all ingredients
+  rpc ListIngredientsV1(google.protobuf.Empty) returns (stream IngredientV1) {};
+
+  // CreateDishV1 allows to create new dish receipt
+  rpc CreateDishV1(CreateDishRequestV1) returns (google.protobuf.Empty) {};
+  // UpdateDishV1 allows to edit existing dish receipt
+  rpc UpdateDishV1(UpdateDishRequestV1) returns (google.protobuf.Empty) {};
+  // GetDishV1 allows to read dish receipt
+  rpc GetDishV1(DishIdV1) returns (DishV1) {};
+  // DeleteDishV1 allows to delete existing dish receipt
+  rpc DeleteDishV1(DishIdV1) returns (google.protobuf.Empty) {};
+  // ListDishesV1 allows to get list of all dishes
+  rpc ListDishesV1(google.protobuf.Empty) returns (stream DishV1) {};
+
+  // CreateBundleV1 allows to create new bundle (menu)
+  rpc CreateBundleV1(CreateBundleRequestV1) returns (google.protobuf.Empty) {};
+  // UpdateBundleV1 allows to edit existing bundle
+  rpc UpdateBundleV1(UpdateBundleRequestV1) returns (google.protobuf.Empty) {};
+  // GetBundleV1 allows to read bundle information
+  rpc GetBundleV1(BundleIdV1) returns (BundleV1) {};
+  // DeleteDishV1 allows to delete existing bundle
+  rpc DeleteBundleV1(BundleIdV1) returns (google.protobuf.Empty) {};
+  // ListBundlesV1 allows to get list of all bundles
+  rpc ListBundlesV1(google.protobuf.Empty) returns (stream BundleV1) {};
+
+  // AddBundleWeeklyDishV1 adds dish to bundle for specified week
+  rpc AddBundleWeeklyDishV1(BundleWeeklyDishV1)
+      returns (google.protobuf.Empty) {};
+  // DeleteBundleWeeklyDishV1 removes dish from bundle for specified week
+  rpc DeleteBundleWeeklyDishV1(BundleWeeklyDishV1)
+      returns (google.protobuf.Empty) {};
+  // GetBundleWeeklyDishesV1 lists all dishes in bundle for specified week
+  rpc GetBundleWeeklyDishesV1(GetBundleWeeklyDishesRequestV1)
+      returns (stream DishV1) {};
+
+  // CreateResourceV1 allows to create new file resource
+  rpc CreateResourceV1(CreateResourceRequestV1)
+      returns (google.protobuf.Empty) {};
+  // UpdateResourceV1 allows to edit file resource
+  rpc UpdateResourceV1(UpdateResourceRequestV1)
+      returns (google.protobuf.Empty) {};
+  // GetResourceV1 allows to get file resource
+  rpc GetResourceV1(ResourceIdV1) returns (ResourceResponseV1) {};
+  // DeleteResourceV1 allows to remove file resource
+  rpc DeleteResourceV1(ResourceIdV1) returns (google.protobuf.Empty) {};
+  // ListResourcesV1 allows to get list of all resources
+  rpc ListResourcesV1(google.protobuf.Empty)
+      returns (stream ResourceResponseV1) {};
+
+  // AttachResourceToDishV1 allows to add resource to specified dish
+  rpc AttachResourceToDishV1(DishResourceRequestV1)
+      returns (google.protobuf.Empty) {};
+  // DetachResourceToDishV1 allows to remove resource from specified dish
+  rpc DetachResourceFromDishV1(DishResourceRequestV1)
+      returns (google.protobuf.Empty) {};
+  // ListDishResourcesV1 allows to list all resources for specified dish
+  rpc ListDishResourcesV1(DishIdV1) returns (stream ResourceResponseV1) {};
+}
+
+message IngredientV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+  string name = 2 [ (buf.validate.field).string.min_len = 1 ];
+  string unit = 3 [ (buf.validate.field).string.min_len = 1 ];
+}
+
+message CreateIngredientRequestV1 {
+  string name = 1 [ (buf.validate.field).string.min_len = 1 ];
+  string unit = 2 [ (buf.validate.field).string.min_len = 1 ];
+}
+
+message UpdateIngredientRequestV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+  string name = 2 [ (buf.validate.field).string.min_len = 1 ];
+  string unit = 3 [ (buf.validate.field).string.min_len = 1 ];
+}
+
+message IngredientIdV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+}
+
+message DishIngredientV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+  string name = 2 [ (buf.validate.field).string.min_len = 1 ];
+  string unit = 3 [ (buf.validate.field).string.min_len = 1 ];
+  uint64 qty = 4 [ (buf.validate.field).ignore_empty = false ];
+}
+
+message DishV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+  string name = 2 [ (buf.validate.field).string.min_len = 1 ];
+  string description = 3 [ (buf.validate.field).string.min_len = 1 ];
+  repeated DishIngredientV1 ingredients = 4
+      [ (buf.validate.field).ignore_empty = true ];
+}
+
+message CreateDishRequestV1 {
+  string name = 1 [ (buf.validate.field).string.min_len = 1 ];
+  string description = 2 [ (buf.validate.field).string.min_len = 1 ];
+  repeated DishIngredientV1 ingredients = 3
+      [ (buf.validate.field).ignore_empty = true ];
+}
+
+message UpdateDishRequestV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+  string name = 2 [ (buf.validate.field).string.min_len = 1 ];
+  string description = 3 [ (buf.validate.field).string.min_len = 1 ];
+  repeated DishIngredientV1 ingredients = 4
+      [ (buf.validate.field).ignore_empty = true ];
+}
+
+message DishIdV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+}
+
+message BundleV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+  string name = 2 [ (buf.validate.field).string.min_len = 1 ];
+  uint64 price = 3 [ (buf.validate.field).ignore_empty = false ];
+}
+
+message CreateBundleRequestV1 {
+  string name = 1 [ (buf.validate.field).string.min_len = 1 ];
+  uint64 price = 2 [ (buf.validate.field).ignore_empty = false ];
+}
+
+message UpdateBundleRequestV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+  string name = 2 [ (buf.validate.field).string.min_len = 1 ];
+  uint64 price = 3 [ (buf.validate.field).ignore_empty = false ];
+}
+
+message BundleIdV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+}
+
+message BundleWeeklyDishV1 {
+  uint64 week_number = 1 [ (buf.validate.field).ignore_empty = false ];
+  uint64 bundle_id = 2 [ (buf.validate.field).ignore_empty = false ];
+  uint64 dish_id = 3 [ (buf.validate.field).ignore_empty = false ];
+}
+
+message GetBundleWeeklyDishesRequestV1 {
+  uint64 week_number = 1 [ (buf.validate.field).ignore_empty = false ];
+  uint64 bundle_id = 2 [ (buf.validate.field).ignore_empty = false ];
+}
+
+message ResourceV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+  bytes data = 2 [ (buf.validate.field).ignore_empty = false ];
+  string filename = 3 [ (buf.validate.field).string.min_len = 1 ];
+  string type = 4 [ (buf.validate.field).string.min_len = 1 ];
+}
+
+message CreateResourceRequestV1 {
+  bytes data = 1 [ (buf.validate.field).ignore_empty = false ];
+  string filename = 2 [ (buf.validate.field).string.min_len = 1 ];
+  string type = 3 [ (buf.validate.field).string.min_len = 1 ];
+}
+
+message UpdateResourceRequestV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+  bytes data = 2 [ (buf.validate.field).ignore_empty = false ];
+  string filename = 3 [ (buf.validate.field).string.min_len = 1 ];
+  string type = 4 [ (buf.validate.field).string.min_len = 1 ];
+}
+
+message ResourceIdV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+}
+
+message ResourceResponseV1 {
+  uint64 id = 1 [ (buf.validate.field).ignore_empty = false ];
+  string filename = 2 [ (buf.validate.field).string.min_len = 1 ];
+  string type = 3 [ (buf.validate.field).string.min_len = 1 ];
+}
+
+message DishResourceRequestV1 {
+  uint64 dish_id = 1 [ (buf.validate.field).ignore_empty = false ];
+  uint64 resource_id = 2 [ (buf.validate.field).ignore_empty = false ];
+}

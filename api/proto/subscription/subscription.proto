@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package api.subscription.v1;
+
+option go_package = "github.com/PoorMercymain/GopherEats/pkg/api/subscription";
+
+import "google/protobuf/empty.proto";
+import "buf/validate/validate.proto";
+
+service SubscriptionV1 {
+  // CreateSubscriptionV1 can be used to create a subscription using user email and bundle_id
+  rpc CreateSubscriptionV1(CreateSubscriptionRequestV1) returns (google.protobuf.Empty) {}
+  // ReadSubscriptionV1 can be used to read user subscription info (bundle_id and is_deleted)
+  rpc ReadSubscriptionV1(ReadSubscriptionRequestV1) returns (ReadSubscriptionResponseV1) {}
+  // ChangeSubscriptionV1 can be used to modify user subscription info (bundle_id to change bundle and is_deleted for cancelling the subscription)
+  rpc ChangeSubscriptionV1(ChangeSubscriptionRequestV1) returns (google.protobuf.Empty) {}
+  // CancelSubscriptionV1 can be used to cancel user subscription
+  rpc CancelSubscriptionV1(CancelSubscriptionRequestV1) returns (google.protobuf.Empty) {}
+  // AddBalanceV1 can be used to add funds to user balance
+  rpc AddBalanceV1(AddBalanceRequestV1) returns (google.protobuf.Empty) {}
+  // ReadUserDataV1 can be used to read user data (address, bundle_id, balance)
+  rpc ReadUserDataV1(ReadUserDataRequestV1) returns (ReadUserDataResponseV1) {}
+  // ReadBalanceHistoryV1 can be used to read history of user replenishments and debits using email and history page number
+  rpc ReadBalanceHistoryV1(ReadBalanceHistoryRequestV1) returns (ReadBalanceHistoryResponseV1) {}
+}
+
+message CreateSubscriptionRequestV1 {
+  string email = 1 [(buf.validate.field).string.min_len = 5];
+  int64 bundle_id = 2 [(buf.validate.field).int64.gte = 0];
+}
+
+message ReadSubscriptionRequestV1 {
+  string email = 1 [(buf.validate.field).string.min_len = 5];
+}
+
+message ReadSubscriptionResponseV1 {
+  int64 bundle_id = 1 [(buf.validate.field).int64.gte = 0];
+  bool is_deleted = 2;
+}
+
+message ChangeSubscriptionRequestV1 {
+  string email = 1 [(buf.validate.field).string.min_len = 5];
+  int64 bundle_id = 2 [(buf.validate.field).int64.gte = 0];
+  bool is_deleted = 3;
+}
+
+message CancelSubscriptionRequestV1 {
+  string email = 1 [(buf.validate.field).string.min_len = 5];
+}
+
+message AddBalanceRequestV1 {
+  string email = 1 [(buf.validate.field).string.min_len = 5];
+  uint64 amount = 2 [(buf.validate.field).uint64.gte = 0];
+}
+
+message ReadUserDataRequestV1 {
+  string email = 1 [(buf.validate.field).string.min_len = 5];
+}
+
+message ReadUserDataResponseV1 {
+  string address = 1 [(buf.validate.field).string.min_len = 1];
+  int64 bundle_id = 2 [(buf.validate.field).int64.gte = 0];
+  uint64 balance = 3 [(buf.validate.field).uint64.gte = 0];
+}
+
+message ReadBalanceHistoryRequestV1 {
+  string email = 1 [(buf.validate.field).string.min_len = 5];
+  uint64 page = 2 [(buf.validate.field).uint64.gte = 0];
+}
+
+message ReadBalanceHistoryResponseV1 {
+  repeated HistoryElementV1 history = 1;
+}
+
+message HistoryElementV1 {
+  string email = 1 [(buf.validate.field).string.min_len = 5];
+  uint64 amount = 2 [(buf.validate.field).uint64.gte = 0];
+  string operation = 3 [(buf.validate.field).string.min_len = 1];
+  string made_at = 4 [(buf.validate.field).string.min_len = 1];
+}
